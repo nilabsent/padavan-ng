@@ -1,4 +1,4 @@
-SRC_NAME=transmission-2.9X
+SRC_NAME=transmission-3.X
 
 COMMON_FLAGS = -ffunction-sections -fdata-sections -fvisibility=hidden -D_LARGEFILE64_SOURCE -D_LFS64_LARGEFILE
 CFLAGS   += $(COMMON_FLAGS)
@@ -20,13 +20,12 @@ config_test:
 
 configure:
 	( cd $(SRC_NAME) ; \
-	HAVE_CXX=yes \
-	PKG_CONFIG_PATH=$(STAGEDIR)/lib/pkgconfig \
+        HAVE_CXX=yes \
+        PKG_CONFIG_PATH=$(STAGEDIR)/lib/pkgconfig \
 	./configure \
 		--prefix=/usr \
 		--enable-daemon \
 		--enable-lightweight \
-		--disable-utp \
 		--disable-nls \
 		--disable-cli \
 		--disable-mac \

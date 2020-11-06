@@ -63,7 +63,7 @@ func_start()
 		svc_user=" -c nobody"
 	fi
 	
-	start-stop-daemon -S -N $SVC_PRIORITY$svc_user -x $SVC_PATH -- -g "$DIR_CFG" -P "$tr_pport" -p "$tr_rport" -e "${DIR_LINK}/transmission.log"
+	start-stop-daemon -S -N $SVC_PRIORITY$svc_user -x $SVC_PATH -- -g "$DIR_CFG" -P "$tr_pport" -p "$tr_rport" -e "${DIR_LINK}/transmission.log --no-utp"
 	
 	if [ $? -eq 0 ] ; then
 		echo "[  OK  ]"
