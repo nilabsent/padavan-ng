@@ -27,6 +27,7 @@ configure:
 	LD="$(CC)" \
 	./configure \
 		--prefix=/usr \
+		--sysconfdir=/usr/etc_ro \
 		--with-ssl=openssl \
 		--disable-nls \
 		--host=$(HOST_TARGET) \
@@ -41,3 +42,5 @@ clean:
 
 romfs:
 	$(ROMFSINST) -p +x $(THISDIR)/$(SRC_NAME)/src/wget /usr/bin/wget
+	mkdir -p $(INSTALLDIR)/etc_ro/ssl/certs
+	$(ROMFSINST) -p $(THISDIR)/wgetrc /etc_ro/wgetrc
