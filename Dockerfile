@@ -20,6 +20,8 @@ RUN apt-get install -qy \
 	libtool \
 	bison \
 	flex \
+	cmake \
+	kmod \
 	zlib1g-dev \
 	libgmp3-dev \
 	libmpfr-dev \
