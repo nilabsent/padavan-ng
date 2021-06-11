@@ -31,6 +31,7 @@ RUN apt-get install -qy \
 	libncurses5-dev \
 	nano \
 	vim \
+	wget \
 	autopoint \
 	gperf \
 	python-docutils \
