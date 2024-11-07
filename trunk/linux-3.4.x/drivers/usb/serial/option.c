@@ -562,6 +562,11 @@ static void option_instat_callback(struct urb *urb);
 #define WETELECOM_PRODUCT_6802			0x6802
 #define WETELECOM_PRODUCT_WMD300		0x6803
 
+/* Fibocom Wireless Qualcomm */
+#define FIBOCOM_VENDOR_ID			0x2cb7
+#define FIBOCOM_PRODUCT_NL678			0x0104
+#define FIBOCOM_PRODUCT_NL678_ECM		0x0105
+
 /* some devices interfaces need special handling due to a number of reasons */
 enum option_blacklist_reason {
 		OPTION_BLACKLIST_NONE = 0,
@@ -719,6 +724,14 @@ static const struct option_blacklist_info yuga_clm920_nc5_blacklist = {
 
 static const struct option_blacklist_info quectel_ep06_blacklist = {
 	.reserved = BIT(4) | BIT(5),
+};
+
+static const struct option_blacklist_info fibocom_nl678_blacklist = {
+	.reserved = BIT(4) | BIT(5),
+};
+
+static const struct option_blacklist_info fibocom_nl678_ecm_blacklist = {
+	.reserved = BIT(6),
 };
 
 static const struct usb_device_id option_ids[] = {
@@ -2114,6 +2127,10 @@ static const struct usb_device_id option_ids[] = {
 	{ USB_DEVICE_AND_INTERFACE_INFO(WETELECOM_VENDOR_ID, WETELECOM_PRODUCT_6802, 0xff, 0xff, 0xff) },
 	{ USB_DEVICE_AND_INTERFACE_INFO(WETELECOM_VENDOR_ID, WETELECOM_PRODUCT_WMD300, 0xff, 0xff, 0xff) },
 	{ USB_DEVICE_AND_INTERFACE_INFO(0x03f0, 0x421d, 0xff, 0xff, 0xff) }, /* HP lt2523 (Novatel E371) */
+	{ USB_DEVICE(FIBOCOM_VENDOR_ID, FIBOCOM_PRODUCT_NL678), /* Fibocom NL678 QMI */
+	  .driver_info = (kernel_ulong_t)&fibocom_nl678_blacklist },
+	{ USB_DEVICE(FIBOCOM_VENDOR_ID, FIBOCOM_PRODUCT_NL678_ECM), /* Fibocom NL678 ECM */
+	  .driver_info = (kernel_ulong_t)&fibocom_nl678_ecm_blacklist },
 	{ } /* Terminating entry */
 };
 MODULE_DEVICE_TABLE(usb, option_ids);
