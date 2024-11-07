@@ -20,6 +20,8 @@ RUN apt-get install -qy \
 	libtool \
 	bison \
 	flex \
+	cmake \
+	kmod \
 	zlib1g-dev \
 	libgmp3-dev \
 	libmpfr-dev \
@@ -29,6 +31,7 @@ RUN apt-get install -qy \
 	libncurses5-dev \
 	nano \
 	vim \
+	wget \
 	autopoint \
 	gperf \
 	python-docutils \
