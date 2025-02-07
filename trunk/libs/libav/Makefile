@@ -33,8 +33,13 @@ PROTOCOLS_CONFIG=--enable-protocol=file
 
 CFLAGS += -D_LARGEFILE64_SOURCE -D_LFS64_LARGEFILE
 
-all: extract_test config_test
+all: download_test extract_test config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
+
+download_test:
+	( if [ ! -f $(SRC_NAME).tar.gz ]; then \
+		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL); \
+	fi )
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
