@@ -81,7 +81,7 @@ fi
 . ${ROOTDIR}/.config
 
 # remove this later
-if [ ! -f "${CONFIG_TOOLCHAIN_DIR}/mipsel-linux-uclibc/sysroot/lib/libuClibc-1.0.38.so" ] ; then
+if [ ! -f "${CONFIG_TOOLCHAIN_DIR}/mipsel-linux-uclibc/sysroot/lib/libuClibc-1.0.50.so" ] ; then
 	echo "Toolchain and uClibc are updated! Please recompile toolchain."
 	exit 1
 fi

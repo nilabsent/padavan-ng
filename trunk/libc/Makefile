@@ -15,7 +15,7 @@ include $(ROOTDIR)/include/configedit.mk
 
 DESTDIR=$(ROOTDIR)/stage
 
-LIBC_DIR = uClibc-1.0.3X
+LIBC_DIR = uClibc-ng-1.0.50
 
 all:
 	cp -fL $(ROOTDIR)/configs/boards/uclibc-mipsel.config $(LIBC_DIR)/.config
