@@ -1,0 +1,24 @@
+# All arguments here: https://github.com/bol-van/zapret
+
+--filter-tcp=80
+--dpi-desync=fake,multidisorder --dpi-desync-split-pos=1,midsld --dpi-desync-fooling=md5sig
+#--dpi-desync=fake,disorder2 --dpi-desync-ttl=0 --dpi-desync-fooling=md5sig,badsum
+#--dpi-desync=fake,multisplit --dpi-desync-split-pos=method+2 --dpi-desync-fooling=md5sig
+<HOSTLIST>
+
+--new
+--filter-tcp=443
+#--dpi-desync=fake,split2 --dpi-desync-ttl=0 --dpi-desync-repeats=16 --dpi-desync-split-pos=1 --dpi-desync-fooling=md5sig,badseq
+--dpi-desync=fake,multidisorder --dpi-desync-split-pos=1,midsld --dpi-desync-fooling=md5sig,badseq
+--dpi-desync-fake-tls=/usr/share/zapret/fake/tls_clienthello_www_google_com.bin
+<HOSTLIST>
+
+--new
+--filter-udp=443
+--dpi-desync=fake --dpi-desync-repeats=6
+--dpi-desync-fake-quic=/usr/share/zapret/fake/quic_initial_www_google_com.bin
+<HOSTLIST_NOAUTO>
+
+--new
+--filter-udp=50000-50099
+--dpi-desync=fake --dpi-desync-any-protocol --dpi-desync-repeats=6 --dpi-desync-cutoff=n2

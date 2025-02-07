@@ -1,0 +1,98 @@
+diff -ru nfq.orig/Makefile nfq/Makefile
+--- nfq.orig/Makefile	2024-11-23 16:41:36.944347169 +0700
++++ nfq/Makefile	2024-11-23 16:49:22.309396131 +0700
+@@ -1,5 +1,5 @@
+ CC ?= gcc
+-CFLAGS += -std=gnu99 -Os -flto=auto
++CFLAGS += -std=gnu99 -Os
+ CFLAGS_BSD = -Wno-address-of-packed-member
+ CFLAGS_CYGWIN = -Wno-address-of-packed-member -static
+ LIBS_LINUX = -lnetfilter_queue -lnfnetlink -lz
+diff -ru nfq.orig/sec.c nfq/sec.c
+--- nfq.orig/sec.c	2024-11-22 03:39:48.316906031 +0700
++++ nfq/sec.c	2024-11-23 16:49:06.567054921 +0700
+@@ -13,7 +13,7 @@
+ 
+ #include <sys/prctl.h>
+ #include <sys/syscall.h>
+-#include <linux/seccomp.h>
++//#include <linux/seccomp.h>
+ #include <linux/filter.h>
+ // __X32_SYSCALL_BIT defined in linux/unistd.h
+ #include <linux/unistd.h>
+@@ -155,6 +155,7 @@
+ 	filter->jf = jf;
+ 	filter->k = k;
+ }
++/*
+ // deny all blocked syscalls
+ static bool set_seccomp(void)
+ {
+@@ -177,7 +178,7 @@
+ 	set_filter(&prog.filter[idx++], BPF_JMP + BPF_JEQ + BPF_K, 0, 2 + BLOCKED_SYSCALL_COUNT, ARCH_NR); // fail
+ 	set_filter(&prog.filter[idx++], BPF_LD + BPF_W + BPF_ABS, 0, 0, syscall_nr);
+ #endif
+-
++*/
+ /*
+ 	// ! THIS IS NOT WORKING BECAUSE perror() in glibc dups() stderr
+ 	set_filter(&prog.filter[idx++], BPF_JMP + BPF_JEQ + BPF_K, 0, 3, SYS_write); // special check for write call
+@@ -185,6 +186,7 @@
+ 	set_filter(&prog.filter[idx++], BPF_JMP + BPF_JGT + BPF_K, 2 + BLOCKED_SYSCALL_COUNT, 0, 2); // 1 - stdout, 2 - stderr. greater are bad
+ 	set_filter(&prog.filter[idx++], BPF_LD + BPF_W + BPF_ABS, 0, 0, syscall_nr); // reload syscall_nr
+ */
++/*
+ 	for(i=0 ; i<BLOCKED_SYSCALL_COUNT ; i++)
+ 	{
+ 		set_filter(&prog.filter[idx++], BPF_JMP + BPF_JEQ + BPF_K, BLOCKED_SYSCALL_COUNT-i, 0, blocked_syscalls[i]);
+@@ -193,9 +195,11 @@
+ 	set_filter(&prog.filter[idx++], BPF_RET + BPF_K, 0, 0, SECCOMP_RET_KILL); // fail case
+ 	return prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog) >= 0;
+ }
+-
++*/
+ bool sec_harden(void)
+ {
++	return false;
++/*
+ 	if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0))
+ 	{
+ 		DLOG_PERROR("PR_SET_NO_NEW_PRIVS(prctl)");
+@@ -210,6 +214,7 @@
+ 	}
+ #endif
+ 	return true;
++*/
+ }
+ 
+ 
+diff -ru nfq.orig/sec.h nfq/sec.h
+--- nfq.orig/sec.h	2024-11-22 03:39:48.316906031 +0700
++++ nfq/sec.h	2024-11-23 16:49:06.567054921 +0700
+@@ -2,11 +2,12 @@
+ 
+ #include <sys/types.h>
+ #include <stdbool.h>
++#include <stdint.h>
+ 
+ #ifdef __linux__
+ 
+ #include <stddef.h>
+-#include <sys/capability.h>
++#include <linux/capability.h>
+ #include <linux/audit.h>
+ 
+ bool checkpcap(uint64_t caps);
+@@ -14,9 +15,9 @@
+ int getmaxcap(void);
+ bool dropcaps(void);
+ 
+-#define syscall_nr (offsetof(struct seccomp_data, nr))
+-#define arch_nr (offsetof(struct seccomp_data, arch))
+-#define syscall_arg(x) (offsetof(struct seccomp_data, args[x]))
++//#define syscall_nr (offsetof(struct seccomp_data, nr))
++//#define arch_nr (offsetof(struct seccomp_data, arch))
++//#define syscall_arg(x) (offsetof(struct seccomp_data, args[x]))
+ 
+ #if defined(__aarch64__)
+ 
