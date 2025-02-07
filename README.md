@@ -1,5 +1,10 @@
 # README #
 
+Это песочница для опытов на основе репозитория https://gitlab.com/dm38/padavan-ng
+
+Никаких продолжений и развитий не планируется
+
+
 Welcome to the rt-n56u project
 
 This project aims to improve the rt-n56u and other supported devices on the software part, allowing power user to take full control over their hardware.
