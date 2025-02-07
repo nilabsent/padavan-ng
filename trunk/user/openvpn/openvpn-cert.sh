@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ ! -x /usr/bin/openssl ] && [ ! -x /opt/bin/openssl ] ; then
+if [ ! -x /usr/bin/openssl ] && [ ! -x /opt/bin/openssl ]; then
   echo "Unable to find the 'openssl' executable!"
   echo "Please install 'openssl-util' package from Entware."
   exit 1
@@ -35,7 +35,7 @@ SSL_EXT_FILE=/etc/ssl/openssl_ext1.cnf
 ## certs storage path
 CRT_PATH=/etc/storage/openvpn
 CRT_PATH_SRV="$CRT_PATH/server"
-if [ -z "$CRT_PATH_CLI" ] ; then
+if [ -z "$CRT_PATH_CLI" ]; then
   CRT_PATH_CLI="$CRT_PATH/client"
 fi
 
@@ -149,7 +149,7 @@ make_cert() {
   # $7 --> ca if cert is CA
   #
   [ "$7" == "ca" ] && local CA_TRUE="-x509"
-    if  [ ! -s $1 ] ; then
+    if  [ ! -s $1 ]; then
          [[ `echo $4 | grep '^[bpsw]'` ]] && openssl ecparam -name $4 -genkey -out $1
          [[ `echo $4 | grep '^ed'` ]] && openssl genpkey -algorithm $4 -out $1
          [[ `echo $4 | grep '^[1-9]'` ]] && openssl genrsa -out $1 $4
@@ -171,7 +171,7 @@ sign_cert() {
   # $6 --> signature algorithm
   # $7 --> extensions to use (server or client)
   #
-  if [ ! -f $1 ] || [ ! -f $2 ] ; then
+  if [ ! -f $1 ] || [ ! -f $2 ]; then
     echo "Error: CA not found" >&2
     return 1
   fi
@@ -189,7 +189,7 @@ make_dh() {
   #
   # $1 --> dh bits
   #
-  if [ -f dh1024.pem ] ; then
+  if [ -f dh1024.pem ]; then
     echo_process "Skipping DH Parameters. File exists"
   else
     echo_process "Creating DH Parameters (may take long time, be patient)"
@@ -205,12 +205,12 @@ make_ta_tc2() {
   # $2 --> server tc2 key name
   #
 
-  if [ ! -x $OPENVPN ] ; then
+  if [ ! -x $OPENVPN ]; then
     echo_process "Skipping TLS Auth/Crypt key. $OPENVPN not found."
     echo_done
     return 1
   fi
-  if [ -f $1 ] ; then
+  if [ -f $1 ]; then
     echo_process "Skipping TLS Auth/Crypt key. File exists"
     echo_done
   else
@@ -219,7 +219,7 @@ make_ta_tc2() {
     [ -s $1 ] && chmod 600 $1
     echo_done
   fi
-  if [ -f $2 ] ; then
+  if [ -f $2 ]; then
     echo_process "Skipping TLS Crypt v2 server key. File exists"
     echo_done
   else
@@ -263,7 +263,7 @@ client_csr() {
 
 client_sign() {
   [ -z "$CSR_PATH" ] && func_help
-  if [ "${CSR_PATH:0:1}" != "/" ] ; then
+  if [ "${CSR_PATH:0:1}" != "/" ]; then
     CSR_PATH=`pwd`/$CSR_PATH
   fi
   local CRT_PATH_X=$CRT_PATH_SRV
@@ -272,7 +272,7 @@ client_sign() {
     echo "Error: can't cd to $CRT_PATH_X" >&2
     return 1
   fi
-  if [ ! -f $CSR_PATH ] ; then
+  if [ ! -f $CSR_PATH ]; then
     echo "Error: $CSR_PATH - file not found" >&2
     return 1
   fi
