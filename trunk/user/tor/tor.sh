@@ -29,7 +29,7 @@ EOF
 func_start()
 {
 	test -d "$dir_storage" || mkdir -p -m 755 $dir_storage
-	if [ ! -f "$tor_config" ] ; then
+	if [ ! -f "$tor_config" ]; then
 		func_create_config
 	fi
 	if [ -d "/opt/share/tor" ]

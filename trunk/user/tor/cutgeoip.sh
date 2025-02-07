@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Коды стран через "|" без пробелов
-country="FR|BE|NL|RU|UA|BY|KZ|MD|AZ|AM|GE|LY|LT|TM|UZ|EE"
+#country="FR|BE|NL|RU|UA|BY|KZ|MD|AZ|AM|GE|LY|LT|TM|UZ|EE"
+country="RU|UA|BY|KZ|MD|AZ|AM|GE|LY|LT|TM|UZ|EE"
 
 files="geoip geoip6"
 
