@@ -1,7 +1,24 @@
-SRC_NAME=curl-7
+SRC_NAME=curl-8.12.0
+SRC_URL=https://github.com/curl/curl/releases/download/curl-8_12_0/$(SRC_NAME).tar.xz
+THISDIR = $(shell pwd)
 
-all: config_test
+all: download_test extract_test config_test
+#all: config_test
 	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
+
+download_test:
+	( if [ ! -f $(SRC_NAME).tar.xz ]; then \
+		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).tar.xz $(SRC_URL); \
+	fi )
+
+extract_test:
+	( if [ ! -d $(SRC_NAME) ]; then \
+		tar --xz -xf $(SRC_NAME).tar.xz; \
+		[ ! -d $(THISDIR)/patches ] || \
+		find $(THISDIR)/patches -type f -name '*.patch' -print0 \
+		  | sort -z \
+		  | xargs -r -t -0 -n 1 patch -d $(SRC_NAME) -p1 -i; \
+	fi )
 
 config_test:
 	( if [ -f ./config_done ]; then \
@@ -12,7 +29,7 @@ config_test:
 
 configure:
 	( cd $(SRC_NAME) ; \
-	autoreconf -f ; \
+	autoreconf -fi ; \
 	./configure \
 		--prefix= \
 		--disable-static \
@@ -40,21 +57,27 @@ configure:
 		--disable-tls-srp \
 		--disable-libcurl-option \
 		--disable-threaded-resolver \
+		--disable-mqtt \
+		--disable-alt-svc \
+		--disable-hsts \
+		--disable-ntlm \
+		--disable-docs \
 		--without-brotli \
+		--without-hyper \
 		--without-gnutls \
 		--without-ca-path \
 		--without-ca-fallback \
 		--without-cyassl \
-		--without-darwinssl \
 		--without-default-ssl-backend \
 		--without-libidn2 \
-		--without-libmetalink \
 		--without-libpsl \
 		--without-librtmp \
 		--without-libssh \
 		--without-libssh2 \
 		--without-krb4 \
 		--with-nghttp2 \
+		--without-nghttp3 \
+		--without-ngtcp2 \
 		--without-nss \
 		--without-mbedtls \
 		--without-mesalink \
@@ -82,4 +105,7 @@ install:
 	$(MAKE) -C $(SRC_NAME) install DESTDIR=$(STAGEDIR)
 
 romfs:
+ifeq ($(CONFIG_FIRMWARE_INCLUDE_CURL),y)
+	$(ROMFSINST) -d $(DESTDIR)/bin/curl /usr/bin/curl
+endif
 	cp -fP $(DESTDIR)/lib/libcurl.so* $(ROMFSDIR)/lib
