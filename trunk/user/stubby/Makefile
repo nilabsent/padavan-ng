@@ -1,10 +1,19 @@
-SRC_NAME=stubby-0.3.0
+SRC_NAME=stubby-0.4.3
+SRC_URL=https://github.com/getdnsapi/stubby/archive/refs/tags/v0.4.3.tar.gz
 
-CFLAGS +=$(COPT) -ffunction-sections -fdata-sections -fvisibility=hidden
-LDFLAGS += -Wl,--gc-sections,-rpath-link,$(STAGEDIR)/lib -lcrypto -lssl
+all: download_test extract_test config_test
+#all: config_test
+	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)/build
 
-all: config_test
-	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
+download_test:
+	( if [ ! -f $(SRC_NAME).tar.gz ]; then \
+		wget -t5 --timeout=20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL); \
+	fi )
+
+extract_test:
+	( if [ ! -d $(SRC_NAME) ]; then \
+		tar xf $(SRC_NAME).tar.gz ; \
+	fi )
 
 config_test:
 	( if [ -f ./config_done ]; then \
@@ -14,23 +23,19 @@ config_test:
 	fi )
 
 configure:
-	( cd $(SRC_NAME) ; \
-	./autogen.sh ; \
-	./configure \
-		--prefix=/usr \
-		--with-piddir=/var/run \
-		--sysconfdir=/etc/storage/ \
-		--libdir=$(STAGEDIR)/lib \
-		--host=$(HOST_TARGET) \
-		--build=$(HOST_BUILD); \
+	( mkdir -p $(SRC_NAME)/build && cd $(SRC_NAME)/build ; \
+	cmake   -DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_INSTALL_FULL_RUNSTATEDIR=/var/run \
+		-DCMAKE_INSTALL_FULL_SYSCONFDIR=/etc/storage \
+		-DCMAKE_INSTALL_SYSCONFDIR=/etc/storage \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_TOOLCHAIN_FILE=$(ROOTDIR)/include/cross-mipsel-linux.cmake .. \
 	)
 
 clean:
-	if [ -f $(SRC_NAME)/Makefile ] ; then \
-		$(MAKE) -C $(SRC_NAME) distclean ; \
-	fi ; \
+	rm -rf $(SRC_NAME)/build
 	rm config_done
 
 romfs:
-	$(ROMFSINST) /usr/sbin/stubby_start.sh
-	$(ROMFSINST) $(SRC_NAME)/src/stubby /usr/sbin/stubby
+	$(ROMFSINST) $(SRC_NAME)/build/stubby /usr/sbin/stubby
+	$(ROMFSINST) -p +x /usr/bin/stubby_proxy.sh
