@@ -4,7 +4,7 @@ TOP	 = $(ROOTDIR)/user
 
 IFLAGS	 = -idirafter dummyinc
 
-CFLAGS	+= -Wall -W -Werror -Wshadow -Wformat-security -D_FORTIFY_SOURCE=2
+CFLAGS	+= -Os -Wall -W -Werror -Wshadow -Wformat-security -D_FORTIFY_SOURCE=2
 CFLAGS	+= -I$(TOP)/shared
 CFLAGS	+= -I$(TOP)/libdisk
 CFLAGS	+= -ffunction-sections -fdata-sections -fvisibility=hidden
@@ -14,7 +14,7 @@ LINK	= -Wl,-s
 
 LDFLAGS	 = -L$(TOP)/libdisk -ldisk -L$(TOP)/shared -lshared
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_FTPD_SSL),y)
-CFLAGS	+= -DVSF_BUILD_SSL
+CFLAGS	+= -DVSF_BUILD_SSL -Wno-deprecated-declarations
 LDFLAGS	+= -L$(STAGEDIR)/lib -lssl -lcrypto
 endif
 LDFLAGS	+= -Wl,--gc-sections
