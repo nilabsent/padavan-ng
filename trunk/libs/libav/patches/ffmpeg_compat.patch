@@ -1,0 +1,21 @@
+diff -ru ffmpeg-5.0.3.orig/libavutil/mips/cpu.c ffmpeg-5.0.3/libavutil/mips/cpu.c
+--- ffmpeg-5.0.3.orig/libavutil/mips/cpu.c	2022-11-05 03:16:28.000000000 +0700
++++ ffmpeg-5.0.3/libavutil/mips/cpu.c	2025-02-06 11:45:16.898341916 +0700
+@@ -23,7 +23,7 @@
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <string.h>
+-#include <sys/auxv.h>
++//#include <sys/auxv.h>
+ #include "asmdefs.h"
+ #include "libavutil/avstring.h"
+ #endif
+@@ -34,7 +34,7 @@
+ 
+ static int cpucfg_available(void)
+ {
+-    return getauxval(AT_HWCAP) & HWCAP_LOONGSON_CPUCFG;
++    return 0;// getauxval(AT_HWCAP) & HWCAP_LOONGSON_CPUCFG;
+ }
+ 
+ /* Most toolchains have no CPUCFG support yet */
