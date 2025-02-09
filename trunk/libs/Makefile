@@ -134,7 +134,7 @@ dir_y						+= libnfnetlink
 
 # ipset shared libs
 dir_$(CONFIG_FIRMWARE_INCLUDE_IPSET)		+= libmnl
-dir_$(CONFIG_FIRMWARE_INCLUDE_NFQWS)		+= libnetfilter_queue
+dir_$(CONFIG_FIRMWARE_INCLUDE_IPSET)		+= libnetfilter_queue
 
 # tcpdump shared libs
 dir_$(CONFIG_FIRMWARE_INCLUDE_TCPDUMP)		+= libpcap
