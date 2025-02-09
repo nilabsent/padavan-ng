@@ -181,7 +181,7 @@ offload_set_rules() {
       echo "-I FORWARD 2 -o $IFACE -j forwarding_rule_zapret"
     done)
 
-  [ -n "$FW_FORWARD" ] && ip$1tables-restore -n 2>/dev/null <<EOF
+  [ -n "$FW_FORWARD" ] && ip$1tables-restore -n <<EOF
 *filter
 :forwarding_rule_zapret - [0:0]
 -A forwarding_rule_zapret -p udp -m multiport --dports $UDP_PORTS -m connbytes --connbytes 1:9 --connbytes-mode packets --connbytes-dir original -m comment --comment zapret_traffic_offloading_exemption -j RETURN
@@ -252,7 +252,7 @@ iptables_set_rules() {
     FW_MANGLE="$FW_MANGLE$(_MANGLE_RULES)"
   done
 
-  [ -n "$FW_MANGLE" ] && ip$1tables-restore -n 2>/dev/null <<EOF
+  [ -n "$FW_MANGLE" ] && ip$1tables-restore -n <<EOF
 *mangle
 $(echo "$FW_MANGLE")
 COMMIT
