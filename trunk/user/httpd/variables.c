@@ -507,6 +507,14 @@
 			{"telnetd", "", NULL, EVM_RESTART_TELNETD},
 			{"sshd_enable", "", NULL, EVM_RESTART_SSHD},
 			{"sshd_enable_gp", "", NULL, EVM_RESTART_SSHD},
+#if defined(APP_ZAPRET)
+			{"zapret_enable", "", NULL, EVM_RESTART_ZAPRET},
+			{"zapretc.config", "File", NULL, EVM_RESTART_ZAPRET|EVM_BLOCK_UNSAFE},
+			{"zapretc.strategy", "File", NULL, EVM_RESTART_ZAPRET|EVM_BLOCK_UNSAFE},
+			{"zapretc.auto.list", "File", NULL, EVM_BLOCK_UNSAFE},
+			{"zapretc.user.list", "File", NULL, EVM_BLOCK_UNSAFE},
+			{"zapretc.exclude.list", "File", NULL, EVM_BLOCK_UNSAFE},
+#endif
 #if defined(APP_TOR)
 			{"tor_enable", "", NULL, EVM_RESTART_TOR},
 			{"torconf.torrc", "File", NULL, EVM_RESTART_TOR|EVM_BLOCK_UNSAFE},
@@ -917,6 +925,9 @@
 		{EVM_RESTART_VPNCLI,		EVT_RESTART_VPNCLI,		RCN_RESTART_VPNCLI,	EVM_RESTART_FIREWALL},
 		{EVM_RESTART_HTTPD,		EVT_RESTART_HTTPD,		RCN_RESTART_HTTPD,	EVM_RESTART_FIREWALL},
 		{EVM_RESTART_SSHD,		EVT_RESTART_SSHD,		RCN_RESTART_SSHD,	EVM_RESTART_FIREWALL},
+#if defined(APP_ZAPRET)
+		{EVM_RESTART_ZAPRET,		EVT_RESTART_ZAPRET,		RCN_RESTART_ZAPRET,	0},
+#endif
 #if defined(APP_TOR)
 		{EVM_RESTART_TOR,		EVT_RESTART_TOR,		RCN_RESTART_TOR,	EVM_RESTART_FIREWALL},
 #endif

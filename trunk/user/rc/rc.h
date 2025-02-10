@@ -522,6 +522,13 @@ void stop_zram(void);
 void start_zram(void);
 void restart_zram(void);
 #endif
+#if defined(APP_ZAPRET)
+int is_zapret_run(void);
+void stop_zapret(void);
+void start_zapret(void);
+void restart_zapret(void);
+void reload_zapret(void);
+#endif
 #if defined(APP_TOR)
 int is_tor_run(void);
 void stop_tor(void);

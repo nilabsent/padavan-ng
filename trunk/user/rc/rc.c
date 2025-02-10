@@ -1237,6 +1237,12 @@ handle_notifications(void)
 			restart_sshd();
 		}
 #endif
+#if defined(APP_ZAPRET)
+		else if (strcmp(entry->d_name, RCN_RESTART_ZAPRET) == 0)
+		{
+			restart_zapret();
+		}
+#endif
 #if defined(APP_TOR)
 		else if (strcmp(entry->d_name, RCN_RESTART_TOR) == 0)
 		{

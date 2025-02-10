@@ -807,6 +807,10 @@ restart_firewall(void)
 
 	/* update UPnP forwards from lease file */
 	update_upnp();
+
+#if defined(APP_ZAPRET)
+        reload_zapret();
+#endif
 }
 
 void
