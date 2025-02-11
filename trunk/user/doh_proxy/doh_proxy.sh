@@ -11,7 +11,7 @@ func_start() {
 
     start_doh() {
         [ "$2" ] || return
-        /usr/sbin/doh_proxy -r "$2" -p "$1" -b "$dns_bs" -a 127.0.0.1 -u nobody -g nogroup -d
+        /usr/sbin/doh_proxy -r "$2" -p "$1" -b "$dns_bs" -a 127.0.0.1 -u nobody -g nogroup -4 -d
         logger -t doh_proxy "Start resolving to $2 : $1"
     }
 
