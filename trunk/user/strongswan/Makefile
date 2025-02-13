@@ -1,5 +1,5 @@
 SRC_NAME=strongswan-5.9.2
-URL_PATH=https://download.strongswan.org/$(SRC_NAME).tar.bz2
+SRC_URL=https://download.strongswan.org/$(SRC_NAME).tar.bz2
 
 CFLAGS += -ffunction-sections -fdata-sections
 LDFLAGS += -Wl,--gc-sections,-L$(STAGEDIR)/lib,-rpath-link=$(THISDIR)/$(SRC_NAME)/src/libtls/.libs -lcrypto
@@ -12,7 +12,7 @@ all: download_test extract_test config_test
 
 download_test:
 	( if [ ! -f $(THISDIR)/$(SRC_NAME).tar.bz2 ]; then \
-		wget -t5 --timeout=20 --no-check-certificate $(URL_PATH); \
+		wget -t5 -T20 --no-check-certificate -O $(SRC_NAME).tar.bz2 $(SRC_URL) || rm -f $(SRC_NAME).tar.bz2; \
 	fi )
 
 extract_test:
