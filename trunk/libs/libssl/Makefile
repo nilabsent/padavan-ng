@@ -1,5 +1,5 @@
-SRC_NAME=openssl-3.0.15
-SRC_URL=https://github.com/openssl/openssl/releases/download/openssl-3.0.15/openssl-3.0.15.tar.gz
+SRC_NAME=openssl-3.0.16
+SRC_URL=https://github.com/openssl/openssl/releases/download/openssl-3.0.16/openssl-3.0.16.tar.gz
 THISDIR = $(shell pwd)
 
 # openssl use CROSS_COMPILE prefix
