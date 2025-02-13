@@ -40,6 +40,8 @@
 #define RCN_RESTART_HTTPD		"restart_httpd"
 #define RCN_RESTART_TELNETD		"restart_telnetd"
 #define RCN_RESTART_SSHD		"restart_sshd"
+#define RCN_RESTART_DOH			"restart_doh"
+#define RCN_RESTART_STUBBY		"restart_stubby"
 #define RCN_RESTART_ZAPRET		"restart_zapret"
 #define RCN_RESTART_TOR			"restart_tor"
 #define RCN_RESTART_ZRAM		"restart_zram"

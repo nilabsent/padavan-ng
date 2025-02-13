@@ -38,4 +38,4 @@ clean:
 
 romfs:
 	$(ROMFSINST) $(SRC_NAME)/build/stubby /usr/sbin/stubby
-	$(ROMFSINST) -p +x /usr/bin/stubby_proxy.sh
+	$(ROMFSINST) -p +x /usr/bin/stubby.sh

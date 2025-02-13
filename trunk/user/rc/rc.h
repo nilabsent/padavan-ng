@@ -522,6 +522,18 @@ void stop_zram(void);
 void start_zram(void);
 void restart_zram(void);
 #endif
+#if defined(APP_DOH)
+int is_doh_run(void);
+void stop_doh(void);
+void start_doh(void);
+void restart_doh(void);
+#endif
+#if defined(APP_STUBBY)
+int is_stubby_run(void);
+void stop_stubby(void);
+void start_stubby(void);
+void restart_stubby(void);
+#endif
 #if defined(APP_ZAPRET)
 int is_zapret_run(void);
 void stop_zapret(void);

@@ -292,7 +292,7 @@ int
 start_dns_dhcpd(int is_ap_mode)
 {
 	FILE *fp;
-	int i_verbose, i_dhcp_enable, is_dhcp_used, is_dns_used;
+	int i_verbose, i_dhcp_enable, is_dhcp_used, is_dns_used, no_resolv;
 	char dhcp_start[32], dhcp_end[32], dns_all[64];
 	char *ipaddr, *netmask, *gw, *dns1, *dns2, *dns3, *wins, *domain;
 	const char *storage_dir = "/etc/storage/dnsmasq";
@@ -337,15 +337,36 @@ start_dns_dhcpd(int is_ap_mode)
 	if (!is_ap_mode) {
 		/* listen DNS queries from clients of VPN server */
 		fprintf(fp, "listen-address=%s\n", ipaddr);
-	}
+
+		/* don't use resolv-file to resovle DNS queries if doh_proxy or stubby or dnscrypt-proxy is enabled */
+		no_resolv = 0;
 #if defined(APP_DNSCRYPT)
-	if (!is_ap_mode && nvram_match("dnscrypt_enable", "1")) {
-		/* don't use resolv-file to resovle DNS queries if dnscrypt-proxy is enabled */
-		fprintf(fp, "no-resolv\n"
-			    "server=%s#%d\n", nvram_safe_get("dnscrypt_ipaddr"), nvram_get_int("dnscrypt_port"));
-	}
+		if (nvram_match("dnscrypt_enable", "1" ))
+		{
+			fprintf(fp, "server=%s#%d\n", nvram_safe_get("dnscrypt_ipaddr"), nvram_get_int("dnscrypt_port"));
+			no_resolv = 1;
+		}
 #endif
-	if (!is_ap_mode) {
+#if defined(APP_STUBBY)
+		if (nvram_match("stubby_enable", "1"))
+		{
+			fprintf(fp, "server=127.0.0.1#65054\n");
+			no_resolv = 1;
+		}
+#endif
+#if defined(APP_DOH)
+		if (nvram_match("doh_enable", "1"))
+		{
+			fprintf(fp, "server=127.0.0.1#65055\n" "server=127.0.0.1#65056\n" "server=127.0.0.1#65057\n" "server=127.0.0.1#65058\n");
+			no_resolv = 1;
+		}
+#endif
+		if (no_resolv)
+		{
+			fprintf(fp, "no-resolv\n");
+			fprintf(fp, "all-servers\n");
+		}
+
 		is_dns_used = 1;
 		fprintf(fp, "min-port=%d\n", 4096);
 		fprintf(fp, "cache-size=%d\n", DNS_RELAY_CACHE_MAX);

@@ -276,7 +276,60 @@ restart_zram(void)
 	start_zram();
 }
 #endif
+#if defined(APP_DOH)
+int is_doh_run(void){
+	if (check_if_file_exist("/usr/sbin/https_dns_proxy"))
+	{
+		if (pids("https_dns_proxy"))
+			return 1;
+	}
+	return 0;
+}
 
+void stop_doh(void){
+	eval("/usr/bin/doh_proxy.sh", "stop");
+}
+
+void start_doh(void){
+	int doh_mode = nvram_get_int("doh_enable");
+
+	if (doh_mode == 1)
+		eval("/usr/bin/doh_proxy.sh", "start");
+}
+
+void restart_doh(void){
+	stop_doh();
+	start_doh();
+	restart_dhcpd();
+}
+#endif
+#if defined(APP_STUBBY)
+int is_stubby_run(void){
+	if (check_if_file_exist("/usr/sbin/stubby"))
+	{
+		if (pids("stubby"))
+			return 1;
+	}
+	return 0;
+}
+
+void stop_stubby(void){
+	eval("/usr/bin/stubby.sh", "stop");
+}
+
+void start_stubby(void){
+	int stubby_mode = nvram_get_int("stubby_enable");
+
+	if (stubby_mode == 1)
+		eval("/usr/bin/stubby.sh", "start");
+}
+
+void restart_stubby(void){
+	stop_stubby();
+	start_stubby();
+	restart_dhcpd();
+}
+#endif
 #if defined(APP_ZAPRET)
 int is_zapret_run(void){
 	if (check_if_file_exist("/usr/bin/nfqws"))
@@ -607,8 +660,11 @@ start_services_once(int is_ap_mode)
 #if defined(APP_SSHD)
 	start_sshd();
 #endif
-#if defined(APP_ZAPRET)
-	start_zapret();
+#if defined(APP_DOH)
+	start_doh();
+#endif
+#if defined(APP_STUBBY)
+	start_stubby();
 #endif
 #if defined(APP_TOR)
 	start_tor();
@@ -637,13 +693,14 @@ start_services_once(int is_ap_mode)
 		start_xupnpd(IFNAME_BR);
 #endif
 	}
-
 	start_lltd();
 	start_watchdog_cpu();
 	start_crond();
 	start_networkmap(1);
 	start_rstats();
-
+#if defined(APP_ZAPRET)
+	start_zapret();
+#endif
 	return 0;
 }
 
@@ -667,8 +724,11 @@ stop_services(int stopall)
 	stop_u2ec();
 #endif
 #endif
-#if defined(APP_ZAPRET)
-	stop_zapret();
+#if defined(APP_DOH)
+	stop_doh();
+#endif
+#if defined(APP_STUBBY)
+	stop_stubby();
 #endif
 #if defined(APP_TOR)
 	stop_tor();
@@ -678,6 +738,9 @@ stop_services(int stopall)
 #endif
 #if defined(APP_DNSCRYPT)
 	stop_dnscrypt();
+#endif
+#if defined(APP_ZAPRET)
+	stop_zapret();
 #endif
 	stop_networkmap();
 	stop_lltd();

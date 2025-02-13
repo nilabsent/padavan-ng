@@ -1237,6 +1237,18 @@ handle_notifications(void)
 			restart_sshd();
 		}
 #endif
+#if defined(APP_DOH)
+		else if (strcmp(entry->d_name, RCN_RESTART_DOH) == 0)
+		{
+			restart_doh();
+		}
+#endif
+#if defined(APP_STUBBY)
+		else if (strcmp(entry->d_name, RCN_RESTART_STUBBY) == 0)
+		{
+			restart_stubby();
+		}
+#endif
 #if defined(APP_ZAPRET)
 		else if (strcmp(entry->d_name, RCN_RESTART_ZAPRET) == 0)
 		{

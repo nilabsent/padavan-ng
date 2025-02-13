@@ -174,15 +174,14 @@ helpcontent[24] = new Array("",
 				"<#LANHostConfig_x_DDNSWildcard_itemdesc#>",
 				"<#LANHostConfig_x_DDNSStatus_itemdesc#>");
 
-// DNSCrypt
+// Anonymity and content filtering
 helpcontent[25] = new Array("",
 				"<#Adm_Svc_dnscrypt_desc#>",
 				"<#Adm_Svc_dnscrypt_force_dns_desc#>",
-				"<#Adm_Svc_dnscrypt_options_desc#>");
-
-// Zapret
-helpcontent[26] = new Array("",
-				"<#Adm_Svc_zapret_desc#>");
+				"<#Adm_Svc_dnscrypt_options_desc#>",
+				"<#Adm_Svc_zapret_desc#>",
+				"<#Adm_Svc_doh_desc#>",
+				"<#Adm_Svc_stubby_desc#>");
 
 function openTooltip(obj, hint_array_id, hint_show_id)
 {

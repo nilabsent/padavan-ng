@@ -2088,10 +2088,15 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 #else
 	int found_app_sshd = 0;
 #endif
-#if defined(APP_ZAPRET)
-	int found_app_zapret = 1;
+#if defined(APP_DOH)
+	int found_app_doh = 1;
 #else
-	int found_app_zapret = 0;
+	int found_app_doh = 0;
+#endif
+#if defined(APP_STUBBY)
+	int found_app_stubby = 1;
+#else
+	int found_app_stubby = 0;
 #endif
 #if defined(APP_TOR)
 	int found_app_tor = 1;
@@ -2107,6 +2112,11 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 	int found_app_dnscrypt = 1;
 #else
 	int found_app_dnscrypt = 0;
+#endif
+#if defined(APP_ZAPRET)
+	int found_app_zapret = 1;
+#else
+	int found_app_zapret = 0;
 #endif
 #if defined(SUPPORT_WPAD)
 	int found_support_wpad = 1;
@@ -2271,6 +2281,8 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		"function found_srv_u2ec() { return %d;}\n"
 		"function found_srv_lprd() { return %d;}\n"
 		"function found_app_sshd() { return %d;}\n"
+		"function found_app_doh() { return %d;}\n"
+		"function found_app_stubby() { return %d;}\n"
 		"function found_app_zapret() { return %d;}\n"
 		"function found_app_tor() { return %d;}\n"
 		"function found_app_privoxy() { return %d;}\n"
@@ -2292,6 +2304,8 @@ ej_firmware_caps_hook(int eid, webs_t wp, int argc, char **argv)
 		found_srv_u2ec,
 		found_srv_lprd,
 		found_app_sshd,
+		found_app_doh,
+		found_app_stubby,
 		found_app_zapret,
 		found_app_tor,
 		found_app_privoxy,

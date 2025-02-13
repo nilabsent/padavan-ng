@@ -1,49 +1,65 @@
 #!/bin/sh
 
-func_start() {
-    if [ -f "/var/run/doh_proxy.pid" ]; then
-        logger -t doh_proxy "DoH proxy is running."
+DOH_BIN="/usr/sbin/https_dns_proxy"
+PIDFILE="/var/run/https_dns_proxy.pid"
+FIRST_PORT="65055"
+
+log()
+{
+  [ -n "$@" ] || return
+  echo "$@"
+  logger -t "https_dns_proxy" "$@"
+}
+
+start_service()
+{
+    if [ -f "$PIDFILE" ]; then
+        echo "already running"
         return
     fi
 
-    dns_prov=$(cat /etc/resolv.conf 2>/dev/null | grep nameserver | grep -v "127.0.0.1" | awk '{print $2}' | tr "\n" ",")
-    dns_bs=$dns_prov"77.88.8.8,1.1.1.1,8.8.8.8,9.9.9.9,208.67.222.222,94.140.14.14"
-
+    unset started
     start_doh() {
         [ "$2" ] || return
-        /usr/sbin/doh_proxy -r "$2" -p "$1" -b "$dns_bs" -a 127.0.0.1 -u nobody -g nogroup -4 -d
-        logger -t doh_proxy "Start resolving to $2 : $1"
+        local bootstrap_dns=""
+        [ "$3" ] && bootstrap_dns="-b $3"
+
+        $DOH_BIN -p $1 -r $2 $bootstrap_dns -a 127.0.0.1 -u nobody -g nogroup -4 -d
+        if pgrep -x "$DOH_BIN" 2>&1 >/dev/null; then
+            [ ! "$started" ] && log "started, version $($DOH_BIN -V)" && started=1
+            log "start resolving to $2 : $1"
+            touch "$PIDFILE"
+        fi
     }
 
-    start_doh 65055 "$(nvram get doh_server1)"
-    start_doh 65056 "$(nvram get doh_server2)"
-    start_doh 65057 "$(nvram get doh_server3)"
-    start_doh 65058 "$(nvram get doh_server4)"
-
-    touch /var/run/doh_proxy.pid
-    sync && echo 3 > /proc/sys/vm/drop_caches
+    for i in 1 2 3; do
+        start_doh $(($FIRST_PORT+$i-1)) "$(nvram get doh_server$i)" "$(nvram get doh_server_ip$i)"
+    done
 }
 
-func_stop() {
-    if [ -f "/var/run/doh_proxy.pid" ]; then
-        killall doh_proxy
-        logger -t doh_proxy "Shutdown."
-        rm /var/run/doh_proxy.pid
-    else
-        logger -t doh_proxy "DoH proxy is stoping."
-    fi
+stop_service()
+{
+    killall -q $(basename "$DOH_BIN") && log "stopped"
+
+    local loop=0
+    while pgrep -x "$DOH_BIN" 2>&1 >/dev/null && [ $loop -lt 50 ]; do
+        loop=$((loop+1))
+        read -t 0.2
+    done
+
+    rm -f "$PIDFILE"
 }
 
 case "$1" in
     start)
-        func_start
+        start_service
     ;;
     stop)
-        func_stop
+        stop_service
     ;;
     restart)
-        func_stop
-        func_start
+        stop_service
+        start_service
     ;;
     *)
         echo "Usage: $0 {start|stop|restart}"

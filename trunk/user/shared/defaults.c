@@ -588,6 +588,24 @@ struct nvram_pair router_defaults[] = {
 	{ "sshd_enable", "0" },
 	{ "sshd_enable_gp", "0" },
 	{ "wins_enable", "0" },
+#if defined (APP_DOH)
+	{ "doh_enable", "0" },
+	{ "doh_server1", "https://dns.google/dns-query" },
+	{ "doh_server2", "" },
+	{ "doh_server3", "" },
+	{ "doh_server_ip1", "1.1.1.1,8.8.8.8,9.9.9.9,208.67.222.222,77.88.8.8" },
+	{ "doh_server_ip2", "" },
+	{ "doh_server_ip3", "" },
+#endif
+#if defined (APP_STUBBY)
+	{ "stubby_enable", "0" },
+	{ "stubby_server1", "dns.google" },
+	{ "stubby_server2", "" },
+	{ "stubby_server3", "" },
+	{ "stubby_server_ip1", "8.8.8.8" },
+	{ "stubby_server_ip2", "" },
+	{ "stubby_server_ip3", "" },
+#endif
 #if defined (APP_ZAPRET)
 	{ "zapret_enable", "0" },
 #endif
