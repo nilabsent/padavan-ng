@@ -8,7 +8,7 @@ AR = ar
 RANLIB = ranlib
 CXX = g++
 
-COPTS = $(CPUFLAGS) -Os $(filter-out -O%, $(CFLAGS))
+COPTS = $(CPUFLAGS) $(if $(CONFIG_CC_OPTIMIZE_FOR_SIZE),-Os,-O3) $(filter-out -O%, $(CFLAGS))
 COPTS += $(if $(CONFIG_IPV6),-DOPENSSL_USE_IPV6=1,)
 COPTS += -DOPENSSL_PREFER_CHACHA_OVER_GCM
 
