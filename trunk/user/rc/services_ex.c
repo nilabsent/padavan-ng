@@ -365,6 +365,25 @@ start_dns_dhcpd(int is_ap_mode)
 		{
 			fprintf(fp, "no-resolv\n");
 			fprintf(fp, "all-servers\n");
+
+			// Use time server update bypassing DoT/DoH
+			char *ntp_addr[2];
+
+			ntp_addr[0] = nvram_safe_get("ntp_server0");
+			ntp_addr[1] = nvram_safe_get("ntp_server1");
+
+			if (strlen(ntp_addr[0]) < 3)
+			{
+				ntp_addr[0] = "pool.ntp.org";
+			}
+			if (strlen(ntp_addr[1]) < 3)
+			{
+				ntp_addr[1] = "time.cloudflare.com";
+			}
+			fprintf(fp, "server=/%s/1.1.1.1\n", ntp_addr[0]);
+			fprintf(fp, "server=/%s/9.9.9.9\n", ntp_addr[1]);
+			fprintf(fp, "server=/%s/8.8.8.8\n", "time.google.com");
+			fprintf(fp, "server=/%s/77.88.8.8\n", "ntp.ix.ru");
 		}
 
 		is_dns_used = 1;
