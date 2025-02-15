@@ -11,7 +11,7 @@
 
 <style type="text/css">
 body {
-  background: url("/bootstrap/img/dark-bg.jpg") repeat scroll center top transparent;
+  background-color: #202020;
   min-width: 1060px;
 }
 

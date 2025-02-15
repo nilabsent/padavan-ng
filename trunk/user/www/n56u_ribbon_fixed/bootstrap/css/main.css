@@ -1,7 +1,8 @@
 body{
-    background: url("../img/dark-bg.jpg") repeat scroll center top transparent;
+    background-color: #202020;
     overflow-y: scroll;
 }
+
 body.body_iframe{
     background: #F5F5F5;
     margin: 0 5px 0 5px;
@@ -15,7 +16,7 @@ body.body_iframe{
 }
 
 #logo {
-    background-image: url("/bootstrap/img/asus_logo.png");
+    background-image: url("/bootstrap/img/logo.png");
     width: 150px;
     height: 71px;
     margin-top: 40px;
