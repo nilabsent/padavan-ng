@@ -124,9 +124,7 @@ function initial(){
 		showhide_div('row_zapret', 0);
 		showhide_div('row_zapret_strategy', 0);
 		showhide_div('row_zapret_config', 0);
-		showhide_div('row_zapret_auto', 0);
-		showhide_div('row_zapret_user', 0);
-		showhide_div('row_zapret_exclude', 0);
+		showhide_div('row_zapret_list', 0);
 	}else{
 		change_zapret_enabled();
 	}
@@ -186,9 +184,7 @@ function applyRule(){
 		showhide_div('row_zapret', 0);
 		showhide_div('row_zapret_strategy', 0);
 		showhide_div('row_zapret_config', 0);
-		showhide_div('row_zapret_auto', 0);
-		showhide_div('row_zapret_user', 0);
-		showhide_div('row_zapret_exclude', 0);
+		showhide_div('row_zapret_list', 0);
 	}
 
 	if(!found_app_tor()){
@@ -410,9 +406,7 @@ function change_zapret_enabled(){
 	var v = document.form.zapret_enable[0].checked;
 	showhide_div('row_zapret_strategy', v);
 	showhide_div('row_zapret_config', v);
-	showhide_div('row_zapret_auto', v);
-	showhide_div('row_zapret_user', v);
-	showhide_div('row_zapret_exclude', v);
+	showhide_div('row_zapret_list', v);
 	if (!login_safe()) v = 0;
 	textarea_zapret_enabled(v);
 }
@@ -452,6 +446,7 @@ function change_crond_enabled(){
 		v = 0;
 	textarea_crond_enabled(v);
 }
+
 </script>
 <style>
     .caption-bold {
@@ -1006,43 +1001,51 @@ function change_crond_enabled(){
                                                 </div>
                                             </td>
                                         </tr>
+
+                                        <tr id="row_zapret_list" style="display:none">
+                                            <td colspan="2">
+                                                <a href="javascript:spoiler_toggle('site.list')"><span><#ZapretSitesLists#></span></a>
+                                                <div id="site.list" style="display:none;">
+                                                    <table height="100%" width="100%" cellpadding="0" cellspacing="0" class="table" style="border: 0px; margin: 0px; margin-bottom: 8px;">
+                                                        <tr>
+                                                            <td style="border:0px; padding-bottom: 4px;">
+                                                                <#ZapretCustomList#>:
+                                                            </td>
+                                                            <td style="border:0px; padding-bottom: 4px; padding-left: 11px;">
+                                                                <#ZapretAutomaticList#>:
+                                                            </td>
+                                                            <td style="border:0px; padding-bottom: 4px; padding-left: 13px;">
+                                                                <#ZapretExclusionList#>:
+                                                            </td>
+                                                        </tr>
+                                                        <tr height="100%">
+                                                            <td style="border:0px; width: 33%; padding: 0px; padding-right: 5px; vertical-align: top;">
+                                                                <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.user.list" style="height: 100%; margin-bottom: 0px; resize:vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.user.list",""); %></textarea>
+                                                            </td>
+                                                            <td style="border:0px; width: 33%; padding: 0px; padding-left: 3px; padding-right: 3px; vertical-align: top;">
+                                                                <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.auto.list" style="height: 100%; margin-bottom: 0px; resize:vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.auto.list",""); %></textarea>
+                                                            </td>
+                                                            <td style="border:0px; width: 33%; padding: 0px; padding-left: 5px; vertical-align: top;">
+                                                                <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.exclude.list" style="height: 100%; margin-bottom: 0px; resize:vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.exclude.list",""); %></textarea>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
                                         <tr id="row_zapret_strategy" style="display:none">
                                             <td colspan="2">
-                                                <a href="javascript:spoiler_toggle('zapret.strategy')"><span><#ZapretStrategy#> "strategy"</span></a>
+                                                <a href="javascript:spoiler_toggle('zapret.strategy')"><span><#ZapretStrategy#></span></a>
                                                 <div id="zapret.strategy" style="display:none;">
-                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.strategy" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.strategy",""); %></textarea>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr id="row_zapret_user" style="display:none">
-                                            <td colspan="2">
-                                                <a href="javascript:spoiler_toggle('user.list')"><span><#ZapretUserList#> "user.list"</span></a>
-                                                <div id="user.list" style="display:none;">
-                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.user.list" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.user.list",""); %></textarea>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr id="row_zapret_auto" style="display:none">
-                                            <td colspan="2">
-                                                <a href="javascript:spoiler_toggle('auto.list')"><span><#ZapretAutoList#> "auto.list"</span></a>
-                                                <div id="auto.list" style="display:none;">
-                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.auto.list" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.auto.list",""); %></textarea>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr id="row_zapret_exclude" style="display:none">
-                                            <td colspan="2">
-                                                <a href="javascript:spoiler_toggle('exclude.list')"><span><#ZapretExcludeList#> "exclude.list"</span></a>
-                                                <div id="exclude.list" style="display:none;">
-                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.exclude.list" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.exclude.list",""); %></textarea>
+                                                    <textarea rows="24" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.strategy" style="resize:vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.strategy",""); %></textarea>
                                                 </div>
                                             </td>
                                         </tr>
                                         <tr id="row_zapret_config" style="display:none">
                                             <td colspan="2">
-                                                <a href="javascript:spoiler_toggle('zapret.config')"><span><#CustomConf#> "config"</span></a>
+                                                <a href="javascript:spoiler_toggle('zapret.config')"><span><#CustomConf#></span></a>
                                                 <div id="zapret.config" style="display:none;">
-                                                    <textarea rows="16" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.config" style="resize:none; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.config",""); %></textarea>
+                                                    <textarea rows="8" wrap="off" spellcheck="false" maxlength="8192" class="span12" name="zapretc.config" style="resize:vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("zapretc.config",""); %></textarea>
                                                 </div>
                                             </td>
                                         </tr>
