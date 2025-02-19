@@ -1387,6 +1387,15 @@ handle_notifications(void)
 		else if (strcmp(entry->d_name, RCN_RESTART_NTPC) == 0)
 		{
 			notify_watchdog_time();
+#if defined(APP_DNSCRYPT) || defined(APP_STUBBY) || defined(APP_DOH)
+// updating time servers records in dnsmasq for ntp bypassing DoT/DoH/DNSCrypt
+		if ( nvram_match("dnscrypt_enable", "1" )
+			|| nvram_match("stubby_enable", "1")
+			|| nvram_match("doh_enable", "1") )
+		{
+			restart_dhcpd();
+		}
+#endif
 		}
 		else if (strcmp(entry->d_name, RCN_RESTART_TIME) == 0)
 		{
