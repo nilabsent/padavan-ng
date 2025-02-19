@@ -25,6 +25,8 @@ romfs:
 	echo "ASUSTeK" > $(ROMFS_DIR)/www/httpd_check.htm
 	cd $(ROMFS_DIR)/www && ln -sf /opt/share/www/custom custom
 	cp dict/EN.header $(ROMFS_DIR)/www
+	cp -f logo/$(CONFIG_VENDOR).png $(ROMFS_DIR)/www/bootstrap/img/logo.png \
+		|| cp -f logo/padavan.png $(ROMFS_DIR)/www/bootstrap/img/logo.png
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_DNSCRYPT),y)
 	cd $(ROMFS_DIR)/www && ln -sf /usr/share/dnscrypt-proxy/dnscrypt-resolvers.csv dnscrypt-resolvers.csv
 endif
