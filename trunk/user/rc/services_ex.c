@@ -293,8 +293,8 @@ start_dns_dhcpd(int is_ap_mode)
 {
 	FILE *fp;
 	int i_verbose, i_dhcp_enable, is_dhcp_used, is_dns_used, no_resolv;
-	char dhcp_start[32], dhcp_end[32], dns_all[64];
-	char *ipaddr, *netmask, *gw, *dns1, *dns2, *dns3, *wins, *domain;
+	char dhcp_start[32], dhcp_end[32], dns_all[64], nvram_key[32];
+	char *ipaddr, *netmask, *gw, *dns1, *dns2, *dns3, *wins, *domain, *srv_addr[2];
 	const char *storage_dir = "/etc/storage/dnsmasq";
 
 	i_dhcp_enable = is_dhcpd_enabled(is_ap_mode);
@@ -350,15 +350,34 @@ start_dns_dhcpd(int is_ap_mode)
 #if defined(APP_STUBBY)
 		if (nvram_match("stubby_enable", "1"))
 		{
-			fprintf(fp, "server=127.0.0.1#65054\n");
-			no_resolv = 1;
+			for (int i = 1; i <= 3; i++)
+			{
+				snprintf(nvram_key, sizeof(nvram_key), "stubby_server%d", i);
+				srv_addr[0] = nvram_safe_get(nvram_key);
+				snprintf(nvram_key, sizeof(nvram_key), "stubby_server_ip%d", i);
+				srv_addr[1] = nvram_safe_get(nvram_key);
+				if ( strlen(srv_addr[0]) > 2 && strlen(srv_addr[1]) > 8)
+				{
+					fprintf(fp, "server=127.0.0.1#65054\n");
+					no_resolv = 1;
+					break;
+				}
+			}
 		}
 #endif
 #if defined(APP_DOH)
 		if (nvram_match("doh_enable", "1"))
 		{
-			fprintf(fp, "server=127.0.0.1#65055\n" "server=127.0.0.1#65056\n" "server=127.0.0.1#65057\n" "server=127.0.0.1#65058\n");
-			no_resolv = 1;
+			// ports 65055-65057 for doh
+			for (int i = 1; i <= 3; i++)
+			{
+				snprintf(nvram_key, sizeof(nvram_key), "doh_server%d", i);
+				if ( strlen(nvram_safe_get(nvram_key)) > 2 )
+				{
+					fprintf(fp, "server=127.0.0.1#%d\n", 65054 + i);
+					no_resolv = 1;
+				}
+			}
 		}
 #endif
 		if (no_resolv)
@@ -367,18 +386,16 @@ start_dns_dhcpd(int is_ap_mode)
 			fprintf(fp, "all-servers\n");
 
 			// Use time server update bypassing DoT/DoH
-			char *ntp_addr[2];
+			srv_addr[0] = nvram_safe_get("ntp_server0");
+			srv_addr[1] = nvram_safe_get("ntp_server1");
 
-			ntp_addr[0] = nvram_safe_get("ntp_server0");
-			ntp_addr[1] = nvram_safe_get("ntp_server1");
-
-			if (strlen(ntp_addr[0]) > 2)
+			if (strlen(srv_addr[0]) > 2)
 			{
-				fprintf(fp, "server=/%s/1.1.1.1\n", ntp_addr[0]);
+				fprintf(fp, "server=/%s/1.1.1.1\n", srv_addr[0]);
 			}
-			if (strlen(ntp_addr[1]) > 2)
+			if (strlen(srv_addr[1]) > 2)
 			{
-				fprintf(fp, "server=/%s/8.8.8.8\n", ntp_addr[1]);
+				fprintf(fp, "server=/%s/8.8.8.8\n", srv_addr[1]);
 			}
 		}
 
