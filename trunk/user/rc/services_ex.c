@@ -356,7 +356,7 @@ start_dns_dhcpd(int is_ap_mode)
 				srv_addr[0] = nvram_safe_get(nvram_key);
 				snprintf(nvram_key, sizeof(nvram_key), "stubby_server_ip%d", i);
 				srv_addr[1] = nvram_safe_get(nvram_key);
-				if ( strlen(srv_addr[0]) > 2 && strlen(srv_addr[1]) > 8)
+				if ( strlen(srv_addr[0]) > 2 && strlen(srv_addr[1]) > 6)
 				{
 					fprintf(fp, "server=127.0.0.1#65054\n");
 					no_resolv = 1;
