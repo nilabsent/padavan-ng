@@ -243,6 +243,10 @@ endif
 dir_$(LIBS_INCLUDE_LIBEVENT)			+= libevent
 
 all:
+ifneq ($(LIBS_INCLUDE_LIBSSL),y)
+	sed -i "s/\# CONFIG_FEATURE_WGET_HTTPS is not set/CONFIG_FEATURE_WGET_HTTPS=y/" $(DESTDIR)/busybox.config
+	sed -i "s/CONFIG_FEATURE_WGET_OPENSSL=y/\# CONFIG_FEATURE_WGET_OPENSSL is not set/" $(DESTDIR)/busybox.config
+endif
 	for i in $(dir_y) ; do \
 		[ -d $$i ] && \
 		$(MAKE) -j1 -C $$i || \
