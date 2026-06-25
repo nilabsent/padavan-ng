@@ -8,10 +8,9 @@ SRC_NAME = curl-8.17.0
 SRC_URL = https://github.com/curl/curl/releases/download/curl-8_17_0/$(SRC_NAME).tar.xz
 endif
 
-QUIC = --without-nghttp3 --without-ngtcp2 --without-openssl-quic
-ifneq (,$(filter y, $(CONFIG_FIRMWARE_INCLUDE_QUIC) \
-                    $(CONFIG_FIRMWARE_INCLUDE_QUIC_NGTCP2)))
-QUIC = --with-nghttp3 --with-ngtcp2 --without-openssl-quic
+QUIC = --without-nghttp3 --without-ngtcp2
+ifeq ($(CONFIG_FIRMWARE_INCLUDE_QUIC),y)
+QUIC = --with-nghttp3 --with-ngtcp2
 endif
 
 CPPFLAGS += $(CFLAGS)
@@ -96,6 +95,7 @@ configure:
 		--without-wolfssl \
 		--without-winidn \
 		--without-zsh-functions-dir \
+		--without-openssl-quic \
 		--with-zlib=$(STAGEDIR) \
 		--with-ssl=$(STAGEDIR) \
 		--with-ca-bundle=/etc/ssl/cert.pem \

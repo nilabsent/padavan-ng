@@ -141,10 +141,7 @@ dir_y						+= samba3
 endif
 endif
 
-ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_ZAPRET) \
-                   $(CONFIG_FIRMWARE_INCLUDE_NFQWS) \
-                   $(CONFIG_FIRMWARE_INCLUDE_NFQWS2) \
-                   $(CONFIG_FIRMWARE_INCLUDE_ZAPRET2)))
+ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_ZAPRET) $(CONFIG_FIRMWARE_INCLUDE_ZAPRET2)))
 dir_y						+= zapret
 endif
 

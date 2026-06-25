@@ -160,8 +160,6 @@ ifeq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_TOR) \
 	rm -f $(INSTALLDIR)/www/Advanced_Services_Proxy.asp
 endif
 ifeq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_ZAPRET) \
-		$(CONFIG_FIRMWARE_INCLUDE_NFQWS) \
-		$(CONFIG_FIRMWARE_INCLUDE_NFQWS2) \
 		$(CONFIG_FIRMWARE_INCLUDE_ZAPRET2)))
 	rm -f $(INSTALLDIR)/www/Advanced_Services_Zapret.asp
 endif

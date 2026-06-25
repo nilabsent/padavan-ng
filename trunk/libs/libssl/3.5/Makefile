@@ -22,7 +22,7 @@ OPENSSL_OPTIONS = no-capieng no-cms no-rfc3779 no-seed no-async no-ec2m \
                   no-sctp no-srp no-ssl3 no-aria no-ssl3-method no-tests \
                   no-sm2 no-sm3 no-sm4 no-afalgeng no-comp disable-dynamic-engine
 
-ifeq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_QUIC) $(CONFIG_FIRMWARE_INCLUDE_QUIC_NGTCP2)))
+ifneq ($(CONFIG_FIRMWARE_INCLUDE_QUIC),y)
 OPENSSL_OPTIONS += no-quic
 endif
 

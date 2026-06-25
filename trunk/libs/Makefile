@@ -155,8 +155,7 @@ ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_PRIVOXY) \
 LIBS_INCLUDE_LIBPCRE=y
 endif
 
-ifneq (,$(filter y, $(CONFIG_FIRMWARE_INCLUDE_QUIC) \
-                    $(CONFIG_FIRMWARE_INCLUDE_QUIC_NGTCP2)))
+ifeq ($(CONFIG_FIRMWARE_INCLUDE_QUIC),y)
 QUIC_ENABLED=y
 endif
 
@@ -192,13 +191,8 @@ dir_$(LIBS_INCLUDE_LIBUSB_0)			+= libusb
 dir_$(LIBS_INCLUDE_LIBUSB_1)			+= libusb-1.0
 dir_y						+= libnfnetlink
 
-ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_NFQWS2) \
-                   $(CONFIG_FIRMWARE_INCLUDE_ZAPRET2)))
-dir_y						+= libluajit
-endif
-
+dir_$(CONFIG_FIRMWARE_INCLUDE_ZAPRET2)		+= libluajit
 dir_$(CONFIG_FIRMWARE_INCLUDE_QRENCODE)		+= libqrencode
-
 dir_y						+= libmnl
 dir_y						+= libnetfilter_queue
 
