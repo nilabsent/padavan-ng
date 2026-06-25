@@ -1,9 +1,9 @@
 
 all:
-ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_ZAPRET) $(CONFIG_FIRMWARE_INCLUDE_NFQWS)))
+ifeq ($(CONFIG_FIRMWARE_INCLUDE_ZAPRET),y)
 	$(MAKE) -C zapret all
 endif
-ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_ZAPRET2) $(CONFIG_FIRMWARE_INCLUDE_NFQWS2)))
+ifeq ($(CONFIG_FIRMWARE_INCLUDE_ZAPRET2),y)
 	$(MAKE) -C zapret2 all
 endif
 
@@ -17,13 +17,13 @@ clean:
 romfs:
 	$(ROMFSINST) -p +x /usr/bin/zapret.sh
 	$(ROMFSINST) -d config/zapret /usr/share/zapret
-ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_ZAPRET) $(CONFIG_FIRMWARE_INCLUDE_NFQWS)))
+ifeq ($(CONFIG_FIRMWARE_INCLUDE_ZAPRET),y)
 	$(ROMFSINST) -d config/strategy /usr/share/zapret
 	$(MAKE) -C zapret romfs
 endif
-ifneq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_ZAPRET2) $(CONFIG_FIRMWARE_INCLUDE_NFQWS2)))
+ifeq ($(CONFIG_FIRMWARE_INCLUDE_ZAPRET2),y)
 	$(ROMFSINST) -d config/strategy2 /usr/share/zapret
-ifeq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_ZAPRET) $(CONFIG_FIRMWARE_INCLUDE_NFQWS)))
+ifneq ($(CONFIG_FIRMWARE_INCLUDE_ZAPRET),y)
 	$(ROMFSINST) -d config/strategy2/strategy9 /usr/share/zapret/strategy
 	$(ROMFSINST) -d config/strategy2/strategy5 /usr/share/zapret/strategy0
 	$(ROMFSINST) -d config/strategy2/strategy6 /usr/share/zapret/strategy1
