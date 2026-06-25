@@ -1308,7 +1308,7 @@ function showhide_div(e, sh) {
 
 function decodeSSID(hex) {
     if (!/^0x[0-9A-Fa-f]+$/.test(hex)) {
-        return hex;
+        return decodeURIComponent(hex);
     }
 
     hex = hex.replace(/^0x/i, '');
