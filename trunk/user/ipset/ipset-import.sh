@@ -6,9 +6,16 @@ filter_ipv4()
         | sed -E 's#/32|/0##g' | sort | uniq
 }
 
+log()
+{
+    [ -n "$*" ] || return
+    echo "$@" >&2
+    logger -t "ipset" "$@"
+}
+
 error()
 {
-    echo "$@"
+    log "error: $@"
     exit 1
 }
 
@@ -17,11 +24,11 @@ restore()
     local name="$1"
     local list="$2"
 
-    [ -n "$name" ] || error "specify the ipset name"
+    [ -n "$name" ] || error "specify ipset name"
     [ -f "$list" ] || error "file $list not found"
 
     ipset -q -N $name nethash \
-        && echo "ipset '$name' created successfully"
+        && log "'$name' created successfully"
     ipset flush $name
 
     filter_ipv4 < "$list" \
@@ -29,9 +36,9 @@ restore()
         | ipset restore
 
     if [ $? -eq 0 ]; then
-        echo "ipset $name updated successfully"
+        log "'$name' updated successfully"
     else
-        error "ipset $name failed to update "
+        error "'$name' failed to update "
     fi
 }
 
