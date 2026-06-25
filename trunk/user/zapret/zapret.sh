@@ -345,6 +345,15 @@ reload_service()
     kill -HUP $(cat "$PID_FILE")
 }
 
+function angry-wget() {
+    local r=10
+    while [ $r -gt 0 ]; do
+        wget -t10 -T20 --no-check-certificate "$1" -O "$2" && return 0
+        r=$((r - 1))
+    done
+    return 1
+}
+
 download_nfqws()
 {
     # $1 - nfqws2
@@ -376,26 +385,26 @@ download_nfqws()
     if [ "$2" ]; then
         URL="https://github.com/bol-van/zapret$1/releases/download/v$2/zapret$1-v$2-openwrt-embedded.tar.gz"
         if [ -x /usr/bin/curl ]; then
-            curl -SL --connect-timeout 20 --progress-bar "$URL" -o $archive \
+            curl -SL --retry 10 --retry-all-errors --progress-bar "$URL" -o $archive \
                 || error "unable to download $URL"
         else
-            wget -T20 --no-check-certificate "$URL" -O $archive \
+            angry-wget "$URL" $archive \
                 || error "unable to download $URL"
         fi
     else
         if [ -x /usr/bin/curl ]; then
-            URL=$(curl -sSL --connect-timeout 20 "https://api.github.com/repos/bol-van/zapret$1/releases/latest" \
+            URL=$(curl -sSL --retry 10 --retry-all-errors "https://api.github.com/repos/bol-van/zapret$1/releases/latest" \
                   | grep 'browser_download_url.*openwrt-embedded' | cut -d '"' -f4)
             [ -n "$URL" ] || error "unable to get archive link"
 
-            curl -SL --connect-timeout 20 --progress-bar "$URL" -o $archive \
+            curl -SL --retry 10 --retry-all-errors --progress-bar "$URL" -o $archive \
                 || error "unable to download: $URL"
         else
             URL=$(wget -q -T20 --no-check-certificate "https://api.github.com/repos/bol-van/zapret$1/releases/latest" -O- \
                   | tr ',' '\n' | grep 'browser_download_url.*openwrt-embedded' | cut -d '"' -f4)
             [ -n "$URL" ] || error "unable to get archive link"
 
-            wget -T20 --no-check-certificate "$URL" -O $archive \
+            angry-wget "$URL" $archive \
                 || error "unable to download: $URL"
         fi
     fi
@@ -434,7 +443,7 @@ download_list()
     if [ -x /usr/bin/curl ]; then
         curl -SL --connect-timeout 20 --progress-bar "$HOSTLIST_DOMAINS" -o $list || error "unable to download $HOSTLIST_DOMAINS"
     else
-        wget -T20 --no-check-certificate "$HOSTLIST_DOMAINS" -O $list || error "unable to download $HOSTLIST_DOMAINS"
+        angry-wget "$HOSTLIST_DOMAINS" $list || error "unable to download $HOSTLIST_DOMAINS"
     fi
 
     [ -s "$list" ] && log "downloaded successfully: $HOSTLIST_DOMAINS"
