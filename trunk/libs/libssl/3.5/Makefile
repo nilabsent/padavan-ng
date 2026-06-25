@@ -1,4 +1,4 @@
-SRC_NAME = openssl-3.5.6
+SRC_NAME = openssl-3.5.7
 SRC_URL = https://github.com/openssl/openssl/releases/download/$(SRC_NAME)/$(SRC_NAME).tar.gz
 
 # openssl use CROSS_COMPILE prefix
