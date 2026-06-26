@@ -35,8 +35,8 @@
 
 #define STR(x) #x
 
-#define DEF_WLAN_2G_CC		"GB"
-#define DEF_WLAN_5G_CC		"GB"
+#define DEF_WLAN_2G_CC		"RU"
+#define DEF_WLAN_5G_CC		"RU"
 #define DEF_WLAN_2G_SSID	STR(CONFIG_VENDOR) "_" BOARD_NAME
 #define DEF_WLAN_5G_SSID	STR(CONFIG_VENDOR) "_" BOARD_NAME "_5G"
 #define DEF_WLAN_2G_GSSID	STR(CONFIG_VENDOR) "_" BOARD_NAME "_GUEST"
@@ -46,9 +46,9 @@
 
 #define DEF_ROOT_PASSWORD	"admin"
 #define DEF_SMB_WORKGROUP	"WORKGROUP"
-#define DEF_TIMEZONE		"GMT0"
-#define DEF_NTP_SERVER0		"pool.ntp.org"
-#define DEF_NTP_SERVER1		"time.nist.gov"
+#define DEF_TIMEZONE		"UTC-4"
+#define DEF_NTP_SERVER0		"2.ru.pool.ntp.org"
+#define DEF_NTP_SERVER1		"ntp1.stratum2.ru"
 #ifdef SUPPORT_OPENSSL_EC
 #define DEF_HTTPS_CIPH_LIST	"ECDH+CHACHA20:ECDH+AESGCM:DH+AESGCM:DH+AES256:DH+AES:DH+3DES:RSA+AES:RSA+3DES:!ADH:!MD5:!DSS"
 #else
