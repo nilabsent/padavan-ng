@@ -2,7 +2,7 @@
 
 Форк репозитория [**alxdm**](https://gitlab.com/dm38/padavan-ng)
 
-Добавлены/обновлены:
+#### Добавлены/обновлены:
 - компоненты прошивки: `openssl`, `busybox`, `dnsmasq`, `dropbear`, `openssh`, `miniupnpd`, `iptables`, `openvpn`, `zapret`, `ipset`, `tor`, `amneziawg 2.0` и пр.
 - веб-интерфейсы для `https-dns-proxy`, `stubby`, `dnscrypt`, `wireguard`, `amneziawg 2.0`, `zapret` и пр.
 
