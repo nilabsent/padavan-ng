@@ -64,8 +64,8 @@ ELF2FLT        = elf2flt
 STRIPTOOL      = $(CROSS_COMPILE)strip
 STRIP          = $(STRIPTOOL)
 
-GCC_DIR        = $(shell $(CC) -v 2>&1|grep specs|sed -e 's/.* \(.*\)specs/\1\./')
-MACH_DIR       = $(shell $(CC) -print-multi-directory)
+GCC_DIR       := $(shell $(CC) -v 2>&1|grep specs|sed -e 's/.* \(.*\)specs/\1\./')
+MACH_DIR      := $(shell $(CC) -print-multi-directory)
 
 # have we set a special config below
 UCLINUX_BUILD_SET = 0
