@@ -23,7 +23,7 @@ all: tools linux libc_only libs_only user_only romfs image
 # Get the core stuff worked out
 #
 
-ROOTDIR        = $(shell pwd)
+ROOTDIR       := $(shell pwd)
 HOSTCC         = gcc
 ROMFSINST      = $(ROOTDIR)/tools/romfs-inst.sh
 TFTPDIR        = /tftpboot
@@ -47,11 +47,11 @@ PKG_CONFIG_SYSROOT_DIR = $(STAGEDIR)
 PKG_CONFIG_LIBDIR = $(PKG_CONFIG_SYSROOT_DIR)/lib
 PKG_CONFIG_PATH = $(PKG_CONFIG_LIBDIR)/pkgconfig
 
-FIRMWARE_MAXSIZE = $(shell awk '/"Firmware"/{ getline; getline; gsub(/,$$/,""); print strtonum($$2); }' $(BOARDDIR)/partitions.config)
+FIRMWARE_MAXSIZE := $(shell awk '/"Firmware"/{ getline; getline; gsub(/,$$/,""); print strtonum($$2); }' $(BOARDDIR)/partitions.config)
 
 #NUM MAKE PROCESS = CPU NUMBER IN THE SYSTEM * CPU_OVERLOAD
 CPU_OVERLOAD	= 1
-HOST_NCPU	= $(shell if [ -f /proc/cpuinfo ]; then n=`getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0`; if [ $$n -gt 1 ];then expr $$n \* ${CPU_OVERLOAD}; else echo $$n; fi; else echo 1; fi)
+HOST_NCPU	:= $(shell if [ -f /proc/cpuinfo ]; then n=`getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0`; if [ $$n -gt 1 ];then expr $$n \* ${CPU_OVERLOAD}; else echo $$n; fi; else echo 1; fi)
 
 CONFIG_SHELL := $(shell if [ -x "$$BASH" ]; then echo $$BASH; \
 	  else if [ -x /bin/bash ]; then echo /bin/bash; \

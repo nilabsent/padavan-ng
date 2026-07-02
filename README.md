@@ -1,9 +1,16 @@
 # README #
 
-Это песочница для опытов на основе репозитория https://gitlab.com/dm38/padavan-ng
+Форк репозитория [**alxdm**](https://gitlab.com/dm38/padavan-ng)
 
-Никаких продолжений и развитий не планируется
+#### Добавлены/обновлены:
+- компоненты прошивки: `openssl`, `busybox`, `dnsmasq`, `dropbear`, `openssh`, `miniupnpd`, `iptables`, `openvpn`, `zapret`, `ipset`, `tor`, `amneziawg 2.0` и пр.
+- веб-интерфейсы для `https-dns-proxy`, `stubby`, `dnscrypt`, `wireguard`, `amneziawg 2.0`, `zapret` и пр.
 
+#### Установка зависимостей для сборки прошивки под Ubuntu 24.04:
+```
+apt install --no-install-recommends -y autoconf automake autopoint cmake bison build-essential flex gawk gettext git gperf libtool libtool-bin pkg-config fakeroot kmod cpio doxygen texinfo help2man libncurses5-dev zlib1g-dev libsqlite3-dev gcc-multilib curl dos2unix unzip wget locales xxd libltdl-dev libgmp3-dev libmpfr-dev libarchive-tools libblkid-dev ca-certificates zstd mc
+```
+#
 
 Welcome to the rt-n56u project
 
