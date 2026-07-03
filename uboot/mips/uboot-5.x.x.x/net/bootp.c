@@ -106,6 +106,12 @@ static int BootpCheckPkt(uchar *pkt, unsigned dest, unsigned src, unsigned len)
 	else if (NetReadLong((ulong*)&bp->bp_id) != BootpID) {
 		retval = -6;
 	}
+	else if (NetServerIP != 0) {
+		IPaddr_t server_ip;
+		NetCopyIP(&server_ip, &bp->bp_siaddr);
+		if (server_ip != 0 && server_ip != NetServerIP)
+			retval = -7;
+	}
 
 	debug ("Filtering pkt = %d\n", retval);
 
