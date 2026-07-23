@@ -1375,6 +1375,12 @@ handle_notifications(void)
 				update_hosts_ap();
 			restart_dhcpd();
 		}
+#if defined (SUPPORT_IPSET)
+		else if (strcmp(entry->d_name, RCN_FLUSH_IPSET_DHCPD) == 0)
+		{
+			doSystem("/usr/bin/ipset-flush-dnsmasq.sh");
+		}
+#endif
 		else if (strcmp(entry->d_name, RCN_RESTART_DNS) == 0)
 		{
 			restart_dns();
