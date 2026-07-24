@@ -7,20 +7,26 @@
 --dpi-desync-fooling=md5sig
 --dpi-desync-repeats=2
 <HOSTLIST>
+#--hostlist-exclude=/etc/storage/zapret/exclude.list
 
 ### https
---new --filter-tcp=443
+--new --filter-tcp=443,2053,2083,2087,2096,8443
 --dpi-desync=fake,multisplit
 --dpi-desync-split-pos=1,midsld
+--dpi-desync-fake-tls=0x00000000000000000000000000000000
+--dpi-desync-fake-tls=!
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=fonts.google.com
---dpi-desync-fooling=ts
+--dpi-desync-fooling=badseq
+--dpi-desync-badseq-increment=10000000
 <HOSTLIST>
+#--hostlist-exclude=/etc/storage/zapret/exclude.list
 
 ### quic
 --new --filter-udp=443
 --dpi-desync=fake --dpi-desync-repeats=6
 --dpi-desync-fake-quic=/usr/share/zapret/fake/quic_initial_www_google_com.bin
 <HOSTLIST_NOAUTO>
+#--hostlist-exclude=/etc/storage/zapret/exclude.list
 
 ### games
 --new --filter-udp=21000-21500,65530-65535
@@ -31,11 +37,12 @@
 --dpi-desync-repeats=6
 --dpi-desync-fake-unknown-udp=/usr/share/zapret/fake/quic_initial_www_google_com.bin
 
-### wireguard, discord, telegram
+### wireguard, discord, stun
 --new --filter-udp=*
---dpi-desync=fake --filter-l7=wireguard,discord,stun
+--filter-l7=wireguard,discord,stun
+--dpi-desync=fake
 --dpi-desync-cutoff=n2
 --dpi-desync-repeats=6
---dpi-desync-fake-discord=/usr/share/zapret/fake/quic_initial_www_google_com.bin
---dpi-desync-fake-wireguard=/usr/share/zapret/fake/quic_initial_www_google_com.bin
---dpi-desync-fake-stun=/usr/share/zapret/fake/quic_initial_www_google_com.bin
+--dpi-desync-fake-discord=0x00000000000000000000000000000000
+--dpi-desync-fake-wireguard=0x00000000000000000000000000000000
+--dpi-desync-fake-stun=0x00000000000000000000000000000000
