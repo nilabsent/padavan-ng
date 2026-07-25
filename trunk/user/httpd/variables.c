@@ -502,7 +502,7 @@
 			{"dnsmasq.hosts", "File", NULL, EVM_RESTART_DHCPD},
 			{"dnsmasq.dnsmasq.conf", "File", NULL, EVM_RESTART_DHCPD},
 			{"dnsmasq.dnsmasq.servers", "File", NULL, EVM_RESTART_DHCPD},
-			{"dnsmasq.dnsmasq.ipset", "File", NULL, EVM_RESTART_DHCPD},
+			{"dnsmasq.dnsmasq.ipset", "File", NULL, EVM_FLUSH_IPSET_DHCPD|EVM_RESTART_DHCPD},
 			{"http_access", "", NULL, EVM_RESTART_HTTPD},
 			{"http_proto", "", NULL, EVM_RESTART_HTTPD},
 			{"http_lanport", "", NULL, EVM_RESTART_HTTPD},
@@ -567,7 +567,7 @@
 			{"zapretc.user.list", "File", NULL, FALSE},
 			{"zapretc.exclude.list", "File", NULL, FALSE},
 			{"zapretc.ipset.list", "File", NULL, FALSE},
-			{"zapretc.ipset-exclude.list", "File", NULL, FALSE},
+			{"zapretc.ipset-exclude.list", "File", NULL, EVM_RESTART_ZAPRET},
 #endif
 #if defined(APP_TOR)
 			{"tor_enable", "", NULL, EVM_RESTART_TOR|EVM_RESTART_DHCPD},
@@ -1057,6 +1057,7 @@
 		{EVM_REAPPLY_VPNSVR,		EVT_REAPPLY_VPNSVR,		RCN_REAPPLY_VPNSVR,	0},
 		{EVM_REAPPLY_VPNCLI,		EVT_REAPPLY_VPNCLI,		RCN_REAPPLY_VPNCLI,	0},
 		{EVM_RESTART_DHCPD,		EVT_RESTART_DHCPD,		RCN_RESTART_DHCPD,	0},
+		{EVM_FLUSH_IPSET_DHCPD,		EVT_FLUSH_IPSET_DHCPD,		RCN_FLUSH_IPSET_DHCPD,	0},
 		{EVM_RESTART_SWITCH_CFG,	EVT_RESTART_SWITCH_CFG,		RCN_RESTART_SWITCH_CFG,	0},
 		{EVM_RESTART_SWITCH_VLAN,	EVT_RESTART_SWITCH_VLAN,	RCN_RESTART_SWITCH_VLAN,0},
 		{EVM_RESTART_DDNS,		EVT_RESTART_DDNS,		RCN_RESTART_DDNS,	0},

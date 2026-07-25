@@ -1,6 +1,6 @@
 # https://github.com/bol-van/zapret
 
-SRC_VER = 72.12
+SRC_VER = 72.13
 SRC_NAME = zapret-$(SRC_VER)
 SRC_URL = https://github.com/bol-van/zapret/archive/refs/tags/v$(SRC_VER).tar.gz
 

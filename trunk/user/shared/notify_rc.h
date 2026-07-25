@@ -21,6 +21,7 @@
 #define RCN_RESTART_FIREWALL		"restart_firewall"
 #define RCN_RELOAD_FIREWALL		"restart_firewall_wan"
 #define RCN_RESTART_DHCPD		"restart_dhcpd"
+#define RCN_FLUSH_IPSET_DHCPD		"flush_ipset_dhcpd"
 #define RCN_RESTART_DNS			"restart_dns"
 #define RCN_RESTART_RADV		"restart_radv"
 #define RCN_RESTART_DDNS		"restart_ddns"

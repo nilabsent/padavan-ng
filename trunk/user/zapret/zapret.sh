@@ -128,6 +128,12 @@ startup_args()
     echo "$strategy"
 }
 
+filter_ipv4()
+{
+    grep -E -x '^[[:space:]]*((25[0-5]|2[0-4][0-9]|1[0-9]{2}|0?[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|0?[0-9]{1,2})(/(3[0-2]|[12]?[0-9]))?[[:space:]]*$' \
+        | sed -E 's#/32|/0##g' | sort | uniq
+}
+
 ipset_create_exclude()
 {
     [ -n "$IPSET" ] || return
@@ -142,6 +148,10 @@ ipset_create_exclude()
             ipset -q add nozapret$1 $i
         done
     else
+        filter_ipv4 < "${CONF_DIR}/ipset-exclude.list" \
+            | sed -E 's#^(.*)$#add nozapret \1#' \
+            | ipset restore
+
         for i in \
             127.0.0.0/8 169.254.0.0/16 100.64.0.0/10 \
             198.18.0.0/15 192.88.99.0/24 192.0.0.0/24 \

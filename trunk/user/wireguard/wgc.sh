@@ -107,10 +107,19 @@ wg_setdns()
     update_resolvconf
 }
 
+check_endpoint()
+{
+    local r=5
+    while [ $r -gt 0 ]; do
+        timeout 3 2>&1 nslookup $PEER_ENDPOINT >/dev/null 2>&1 && return 0
+        r=$((r - 1))
+    done
+    return 1
+}
+
 check_host_available()
 {
-    timeout 15 2>&1 nslookup $PEER_ENDPOINT >/dev/null 2>&1
-    if [ $? -ne 0 ]; then
+    if ! check_endpoint; then
         [ -z "$(nvram get wg_log_reduce_t)" ] && log "error: host $PEER_ENDPOINT not found"
         nvram settmp wg_log_reduce_t=1
         nvram settmp wg_need_restart_t=1
@@ -368,16 +377,16 @@ start_wg()
 
 watchdog()
 {
-    if [ -n "$(nvram get wg_need_restart_t)" ]; then
-        stop_wg
-        start_wg
-        exit
-    fi
-
-    is_started || return
-
     (
         flock -n 200 || exit 1
+
+        if [ -n "$(nvram get wg_need_restart_t)" ]; then
+            stop_wg
+            start_wg
+            exit
+        fi
+
+        is_started || return
 
         connect_wg reconnect
         call_post_script watchdog
