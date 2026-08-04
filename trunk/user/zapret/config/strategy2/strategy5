@@ -7,7 +7,7 @@
 --blob=blank:0x00000000000000000000000000000000
 
 ### https, http
---filter-tcp=443,80,2053,2083,2087,2096,8443 --filter-l7=http,tls
+--filter-l7=http,tls
 <HOSTLIST>
 #--hostlist-exclude=/etc/storage/zapret/exclude.list
 --payload=tls_client_hello
@@ -18,14 +18,14 @@
 --lua-desync=hostfakesplit:repeats=2:tcp_md5
 
 ### quic
---new --filter-udp=443 --filter-l7=quic
+--new --filter-l7=quic
 <HOSTLIST_NOAUTO>
 #--hostlist-exclude=/etc/storage/zapret/exclude.list
 --payload=quic_initial
 --lua-desync=fake:blob=quic_google:repeats=6
 
 ### wireguard, discord, stun
---new --filter-udp=* --filter-l7=wireguard,stun,discord
+--new --filter-l7=wireguard,stun,discord
 --payload=wireguard_initiation,wireguard_response,wireguard_cookie,stun,discord_ip_discovery
 --lua-desync=fake:blob=blank:repeats=6
 

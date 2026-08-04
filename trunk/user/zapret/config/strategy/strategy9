@@ -1,18 +1,20 @@
 ### All arguments here: https://github.com/bol-van/zapret
 
 ### http
---filter-tcp=80
+--filter-l7=http
+<HOSTLIST>
+#--hostlist-exclude=/etc/storage/zapret/exclude.list
 --dpi-desync=hostfakesplit
 --dpi-desync-fooling=md5sig
 --dpi-desync-repeats=2
-<HOSTLIST>
-#--hostlist-exclude=/etc/storage/zapret/exclude.list
 
 ### files rnd[0-9].bin autocreated only when the /tmp directory is specified
 ### filled from /dev/urandom, size = minimal MSS of using interfaces
 ### works with options ended -pattern,-syndata,-unknown,-unknown-udp
 ### champloo ¯\_(ツ)_/¯
---new --filter-tcp=443
+--new --filter-l7=tls
+<HOSTLIST>
+#--hostlist-exclude=/etc/storage/zapret/exclude.list
 --dpi-desync=fake,fakedsplit
 --dpi-desync-fakedsplit-mod=altorder=0
 --dpi-desync-fakedsplit-pattern=/tmp/rnd1.bin
@@ -22,15 +24,22 @@
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.ozon.ru
 --dpi-desync-fooling=badseq
 --dpi-desync-badseq-increment=0x10000000
-<HOSTLIST>
-#--hostlist-exclude=/etc/storage/zapret/exclude.list
 
 ### quic
---new --filter-udp=443
---dpi-desync=fake --dpi-desync-repeats=17
---dpi-desync-fake-quic=/usr/share/zapret/fake/quic_initial_www_google_com.bin
+--new --filter-l7=quic
 <HOSTLIST_NOAUTO>
 #--hostlist-exclude=/etc/storage/zapret/exclude.list
+--dpi-desync=fake --dpi-desync-repeats=17
+--dpi-desync-fake-quic=/usr/share/zapret/fake/quic_initial_www_google_com.bin
+
+### wireguard, discord, stun
+--new --filter-l7=wireguard,discord,stun
+--dpi-desync=fake
+--dpi-desync-cutoff=n2
+--dpi-desync-repeats=6
+--dpi-desync-fake-discord=/usr/share/zapret/fake/quic_initial_www_google_com.bin
+--dpi-desync-fake-wireguard=/usr/share/zapret/fake/quic_initial_www_google_com.bin
+--dpi-desync-fake-stun=/usr/share/zapret/fake/quic_initial_www_google_com.bin
 
 ### games
 --new --filter-udp=21000-21500,65530-65535
@@ -40,12 +49,3 @@
 --dpi-desync-autottl=2
 --dpi-desync-repeats=6
 --dpi-desync-fake-unknown-udp=/usr/share/zapret/fake/quic_initial_www_google_com.bin
-
-### wireguard, discord, stun
---new --filter-udp=*
---dpi-desync=fake --filter-l7=wireguard,discord,stun
---dpi-desync-cutoff=n2
---dpi-desync-repeats=6
---dpi-desync-fake-discord=/usr/share/zapret/fake/quic_initial_www_google_com.bin
---dpi-desync-fake-wireguard=/usr/share/zapret/fake/quic_initial_www_google_com.bin
---dpi-desync-fake-stun=/usr/share/zapret/fake/quic_initial_www_google_com.bin

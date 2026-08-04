@@ -205,8 +205,8 @@ set_fw_rules()
 -$1 INPUT -p udp $(cb reply 3) --sport 443 -j zapret_pre
 -$1 FORWARD -p tcp $(cb reply 10) -m multiport --sports 80,443 -j zapret_pre
 -$1 FORWARD -p udp $(cb reply 3) --sport 443 -j zapret_pre
--$1 POSTROUTING -p tcp $(cb original 20) -j zapret_post
--$1 POSTROUTING -p udp $(cb original 5) -j zapret_post
+-$1 POSTROUTING -p tcp $(cb original 20) -m multiport --dports 80,443,1024:65535 -j zapret_post
+-$1 POSTROUTING -p udp $(cb original 5) -m multiport --dports 443,1024:65535 -j zapret_post
 "
 }
 

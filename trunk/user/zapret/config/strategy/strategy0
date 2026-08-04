@@ -2,30 +2,39 @@
 ### To enable ts fooling in Windows: netsh interface tcp set global timestamps=enabled
 
 ### http
---filter-tcp=80
+--filter-l7=http
+<HOSTLIST>
+#--hostlist-exclude=/etc/storage/zapret/exclude.list
 --dpi-desync=hostfakesplit
 --dpi-desync-fooling=md5sig
 --dpi-desync-repeats=2
-<HOSTLIST>
-#--hostlist-exclude=/etc/storage/zapret/exclude.list
 
 ### https
---new --filter-tcp=443,2053,2083,2087,2096,8443
+--new --filter-l7=tls
+<HOSTLIST>
+#--hostlist-exclude=/etc/storage/zapret/exclude.list
 --dpi-desync=fake,multisplit
 --dpi-desync-split-pos=1,midsld
 --dpi-desync-fake-tls=0x00000000000000000000000000000000
 --dpi-desync-fake-tls=!
 --dpi-desync-fake-tls-mod=rnd,dupsid,sni=www.7-zip.org
 --dpi-desync-fooling=ts
-<HOSTLIST>
-#--hostlist-exclude=/etc/storage/zapret/exclude.list
 
 ### quic
---new --filter-udp=443
---dpi-desync=fake --dpi-desync-repeats=6
---dpi-desync-fake-quic=/usr/share/zapret/fake/quic_initial_www_google_com.bin
+--new --filter-l7=quic
 <HOSTLIST_NOAUTO>
 #--hostlist-exclude=/etc/storage/zapret/exclude.list
+--dpi-desync=fake --dpi-desync-repeats=6
+--dpi-desync-fake-quic=/usr/share/zapret/fake/quic_initial_www_google_com.bin
+
+### wireguard, discord, stun
+--new --filter-l7=wireguard,discord,stun
+--dpi-desync=fake
+--dpi-desync-cutoff=n2
+--dpi-desync-repeats=6
+--dpi-desync-fake-discord=0x00000000000000000000000000000000
+--dpi-desync-fake-wireguard=0x00000000000000000000000000000000
+--dpi-desync-fake-stun=0x00000000000000000000000000000000
 
 ### games
 --new --filter-udp=21000-21500,65530-65535
@@ -35,13 +44,3 @@
 --dpi-desync-autottl=2
 --dpi-desync-repeats=6
 --dpi-desync-fake-unknown-udp=/usr/share/zapret/fake/quic_initial_www_google_com.bin
-
-### wireguard, discord, stun
---new --filter-udp=*
---filter-l7=wireguard,discord,stun
---dpi-desync=fake
---dpi-desync-cutoff=n2
---dpi-desync-repeats=6
---dpi-desync-fake-discord=0x00000000000000000000000000000000
---dpi-desync-fake-wireguard=0x00000000000000000000000000000000
---dpi-desync-fake-stun=0x00000000000000000000000000000000
