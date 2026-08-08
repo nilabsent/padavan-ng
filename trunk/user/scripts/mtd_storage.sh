@@ -476,7 +476,7 @@ EOF
 		# create wireguard remote ip list
 		if [ ! -f "$list_vpncr" ] ; then
 			cat > "$list_vpncr" <<EOF
-### List of remote IP addresses/subnets behind the VPN server
+### List of IP addresses and networks accessible through the VPN
 
 # telegram
 91.105.192.0/23
@@ -487,10 +487,6 @@ EOF
 95.161.64.0/20
 149.154.160.0/20
 185.76.151.0/24
-
-# cloudflare
-172.67.64.0/20
-104.26.0.0/20
 EOF
 			chmod 644 "$list_vpncr"
 		fi
@@ -498,7 +494,7 @@ EOF
 		# create wireguard exclusion list of remote ip
 		if [ ! -f "$list_vpnce" ] ; then
 			cat > "$list_vpnce" <<EOF
-### Exclusion list of remote IP addresses/subnets behind the VPN server
+### List of IP addresses and networks excluded from VPN routing
 EOF
 			chmod 644 "$list_vpnce"
 		fi
@@ -589,58 +585,74 @@ EOF
 		if [ ! -f "$user_dnsmasq_ipset" ] ; then
 			cat > "$user_dnsmasq_ipset" <<EOF
 ### Custom user ipsets for dnsmasq
+### Changing the list flushes all affected ipsets
 
 ### for testing
-# ipset=/myip2.ru/unblock
+# ipset=/myip.ru/unblock
 
-### youtube
-# ipset=/youtube.com/unblock
-# ipset=/googlevideo.com/unblock
-# ipset=/googleapis.com/unblock
-# ipset=/ytimg.com/unblock
-# ipset=/ggpht.com/unblock
-
+ipset=/nessus.org/unblock
+ipset=/tenable.com/unblock
+ipset=/broadcom.com/unblock
+ipset=/matt.ucc.asn.au/unblock
+ipset=/ccadb.my.salesforce-sites.com/unblock
+ipset=/dnscheck.tools/unblock
+ipset=/dnsleaktest.com/unblock
 ipset=/xda-developers.com/unblock
 ipset=/xdaforums.com/unblock
 ipset=/vmware.com/unblock
 ipset=/kinozaltv.life/unblock
 ipset=/warpgen.net/unblock
-ipset=/chatgpt.com/unblock
-ipset=/cdn.oaistatic.com/unblock
-ipset=/oaiusercontent.com/unblock
-ipset=/openai.com/unblock
-ipset=/instagram.com/unblock
-ipset=/ig.me/unblock
-ipset=/cdninstagram.com/unblock
-ipset=/threads.net/unblock
-ipset=/threads.com/unblock
 ipset=/rutor.is/unblock
 ipset=/rutracker.org/unblock
-ipset=/meta.com/unblock
-ipset=/meta.ai/unblock
-ipset=/fbcdn.net/unblock
-ipset=/fb.com/unblock
-ipset=/fburl.com/unblock
-ipset=/facebook.com/unblock
-ipset=/fbsbx.com/unblock
-ipset=/whatsapp.net/unblock
-ipset=/whatsapp.com/unblock
-ipset=/whatsapp.patchcdn.com/unblock
-ipset=/x.com/unblock
-ipset=/t.co/unblock
-ipset=/twimg.com/unblock
-ipset=/api.tweetdeck.com/unblock
-ipset=/static.ads-twitter.com/unblock
-ipset=/awsstatic.com/unblock
-ipset=/aws.amazon.com/unblock
-ipset=/amazonwebservices.d2.sc.omtrdc.net/unblock
-ipset=/challenges.cloudflare.com/unblock
-ipset=/jtvnw.net/unblock
-ipset=/ttvnw.net/unblock
-ipset=/oculuscdn.com/unblock
-ipset=/discord.com/unblock
-ipset=/cdn.discordapp.com/unblock
-ipset=/cloudfront.net/unblock
+
+### youtube
+# ipset=/:.*youtube.*:/youtu.be/ggpht.com/ytimg.com/unblock
+# ipset=/yt3.googleusercontent.com/ytimg.l.google.com/unblock
+# ipset=/ytstatic.l.google.com/yt-video-upload.l.google.com/unblock
+
+### twitch
+# ipset=/twitch.tv/twitchcdn.net/jtvnw.net/ttvnw.net/unblock
+# ipset=/ext-twitch.tv/live-video.net/unblock
+
+### discord
+ipset=/:.*discord.*:/dis.gd/unblock
+
+### tiktok
+# ipset=/:.*tiktok.*:/byteoversea.com/ibytedtos.com/unblock
+# ipset=/muscdn.com/musical.ly/tik-tokapi.com/ttwstatic.com/unblock
+
+### chatgpt
+ipset=/chatgpt.com/cdn.oaistatic.com/oaiusercontent.com/openai.com/unblock
+
+### spotify
+ipset=/:.*spotify.*:/scdn.co/pscdn.co/spoti.fi/unblock
+
+### linkedin
+ipset=/linkedin.com/licdn.com/unblock
+
+### meta, facebook, instagram, whatsapp
+ipset=/instagram.com/ig.me/cdninstagram.com/unblock
+ipset=/fb.com/facebook.com/facebook.net/fbcdn.net/fbsbx.com/internalfb.com/unblock
+ipset=/oculus.com/oculuscdn.com/threads.net/threads.com/unblock
+ipset=/:.*whatsapp.*:/wa.me/unblock
+
+### twitter, x.com
+ipset=/:.*twitter.*:/periscope.tv/pscp.tv/t.co/x.com/unblock
+ipset=/twimg.com/twitpic.com/twtrdns.net/twttr.com/twttr.net/twvid.com/unblock
+ipset=/tellapart.com/tweetdeck.com/vine.co/cms-twdigitalassets.com/unblock
+
+### telegram
+ipset=/:.*telegram.*:/telega.one/telegra.ph/telesco.pe/unblock
+ipset=/t.me/tdesktop.com/tg.dev/tx.me/ton.org/unblock
+ipset=/comments.app/contest.com/fragment.com/unblock
+ipset=/graph.org/quiz.directory/usercontent.dev/unblock
+
+### github
+# ipset=/github.com/github.io/:.*githubusercontent.*:/unblock
+
+### cdn
+ipset=/awsstatic.com/aws.amazon.com/amazonaws.com/:.*amazonwebservices.*:/unblock
+ipset=/cloudflare.com/cloudfront.net/unblock
 ipset=/cdn.localizeapi.com/unblock
 EOF
 			chmod 644 "$user_dnsmasq_ipset"
