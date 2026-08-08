@@ -711,6 +711,13 @@
 			{"vpnc_awg_s2", "", NULL, EVM_RESTART_VPNCLI},
 			{"vpnc_awg_s3", "", NULL, EVM_RESTART_VPNCLI},
 			{"vpnc_awg_s4", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_ContentPaddingAddition", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_RekeyAfterTime", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_RekeyTimeout", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_RejectAfterTime", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_KeepaliveTimeout", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_MaxHandshakeAttempts", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_HeaderProtectionKey", "", NULL, EVM_RESTART_VPNCLI},
 #endif
 #if defined(APP_OPENVPN)
 			{"vpns_ov_mode", "", NULL, EVM_RESTART_VPNSVR},

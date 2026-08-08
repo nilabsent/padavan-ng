@@ -860,6 +860,13 @@ struct nvram_pair router_defaults[] = {
 	{ "vpnc_awg_s2", "0" },
 	{ "vpnc_awg_s3", "0" },
 	{ "vpnc_awg_s4", "0" },
+	{ "vpnc_awg_ContentPaddingAddition", "0" },
+	{ "vpnc_awg_RekeyAfterTime", "120" },
+	{ "vpnc_awg_RekeyTimeout", "5" },
+	{ "vpnc_awg_RejectAfterTime", "180" },
+	{ "vpnc_awg_KeepaliveTimeout", "10" },
+	{ "vpnc_awg_MaxHandshakeAttempts", "3" },
+	{ "vpnc_awg_HeaderProtectionKey", "" },
 #endif
 	{ 0, 0 }
 };

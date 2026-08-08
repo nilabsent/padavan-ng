@@ -21,6 +21,7 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/itoggle.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
+<script type="text/javascript" src="/help.js"></script>
 <script>
 var $j = jQuery.noConflict();
 
@@ -613,6 +614,21 @@ function wg_genpsk(){
 	document.form.vpnc_wg_if_preshared.focus();
 }
 
+function wg_genhpk(){
+	if (!login_safe())
+		return false;
+
+	$j.post('/apply.cgi',
+	{
+		'action_mode': ' wg_action ',
+		'action': 'genkey'
+	},
+	function(response){
+		document.form.vpnc_awg_HeaderProtectionKey.value = response;
+	});
+	document.form.vpnc_awg_HeaderProtectionKey.focus();
+}
+
 async function loadJSON(fileName) {
 	const response = await fetch(fileName);
 	return await response.json();
@@ -683,7 +699,7 @@ function wg_conf_import() {
 		if (found_app_awg()) {
 			loadJSON('amneziawg.json')
 				.then(data => {
-					const fields = ['jc', 'jmin', 'jmax', 'i1', 'i2', 'i3', 'i4', 'i5', 'h1', 'h2', 'h3', 'h4', 's1', 's2', 's3', 's4'];
+					const fields = ['jc', 'jmin', 'jmax', 'i1', 'i2', 'i3', 'i4', 'i5', 'h1', 'h2', 'h3', 'h4', 's1', 's2', 's3', 's4', 'ContentPaddingAddition', 'RekeyAfterTime', 'RekeyTimeout', 'RejectAfterTime', 'KeepaliveTimeout', 'MaxHandshakeAttempts', 'HeaderProtectionKey'];
 					fields.forEach(field => {
 						document.form[`vpnc_awg_${field}`].value = settings[field] || data[0][field] || '';
 					});
@@ -1180,9 +1196,8 @@ function vpnc_access_control() {
                                 </tr>
                                 <tr>
                                     <td colspan="2" style="padding-left: 0px; padding-right: 0px">
-                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_junk')"><span style="padding-left: 8px"><#AmneziaWG_JunkPackets#> (Jc, Jmin, Jmax):</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
-                                        <table width="100%" id="spoiler_vpnc_amnezia_junk" style="display: none; border: 0px">
-
+                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_junk')"><span style="padding-left: 8px"><#AmneziaWG_JunkPackets#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
+                                        <table width="100%" id="spoiler_vpnc_amnezia_junk" style="display: none; border: 0px; border-left: 16px">
                                             <tr>
                                                 <th style="border: 0px" width="50%">Jc, <#AmneziaWG_Jc#>:</th>
                                                 <td style="border: 0px">
@@ -1191,15 +1206,15 @@ function vpnc_access_control() {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th width="50%">Jmin, <#AmneziaWG_Jmin#>:</th>
+                                                <th>Jmin, <#AmneziaWG_Jmin#>:</th>
                                                 <td>
                                                     <input name="vpnc_awg_jmin" value="<% nvram_get_x("", "vpnc_awg_jmin"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..1024 ]</span>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th style="padding-bottom: 0px" width="50%">Jmax, <#AmneziaWG_Jmax#>:</th>
-                                                <td style="padding-bottom: 0px">
+                                                <th>Jmax, <#AmneziaWG_Jmax#>:</th>
+                                                <td>
                                                     <input name="vpnc_awg_jmax" value="<% nvram_get_x("", "vpnc_awg_jmax"); %>">
                                                     &nbsp;<span style="color:#888;">[ Jmax > Jmin ]</span>
                                                 </td>
@@ -1209,12 +1224,25 @@ function vpnc_access_control() {
                                 </tr>
                                 <tr>
                                     <td colspan="2" style="padding-left: 0px; padding-right: 0px">
-                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_headers')"><span style="padding-left: 8px"><#AmneziaWG_HeadersMod#> (H1-H4, S1-S4):</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
+                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_headers')"><span style="padding-left: 8px"><#AmneziaWG_HeadersMod#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
                                         <table width="100%" id="spoiler_vpnc_amnezia_headers" style="display: none; border: 0px">
-
                                             <tr>
-                                                <th style="border: 0px" width="50%">Init header, H1:</th>
+                                                <th style="border: 0px" width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,26,3);">Header protection key</a>:</th>
                                                 <td style="border: 0px">
+                                                    <input style="-webkit-text-security: disc;" onfocus="vpnc_awg_HeaderProtectionKey.style='-webkit-text-security: unset;'" onblur="vpnc_awg_HeaderProtectionKey.style='-webkit-text-security: disc;';" type="text" name="vpnc_awg_HeaderProtectionKey" class="input" maxlength="44" size="32" value="<% nvram_get_x("", "vpnc_awg_HeaderProtectionKey"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input type="button" class="btn btn-mini" style="outline:0" onclick="wg_genhpk();" value="<#CTL_refresh#>"/>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Content padding addition:</th>
+                                                <td>
+                                                    <input name="vpnc_awg_ContentPaddingAddition" value="<% nvram_get_x("", "vpnc_awg_ContentPaddingAddition"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..100 ]</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Init header, H1:</th>
+                                                <td>
                                                     <input name="vpnc_awg_h1" value="<% nvram_get_x("", "vpnc_awg_h1"); %>">
                                                 </td>
                                             </tr>
@@ -1258,8 +1286,8 @@ function vpnc_access_control() {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th style="padding-bottom: 0px">Data random increment, S4:</th>
-                                                <td style="padding-bottom: 0px">
+                                                <th>Data random increment, S4:</th>
+                                                <td>
                                                     <input name="vpnc_awg_s4" value="<% nvram_get_x("", "vpnc_awg_s4"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..32 ]</span>
                                                 </td>
@@ -1269,36 +1297,81 @@ function vpnc_access_control() {
                                 </tr>
 
                                 <tr>
-                                    <td colspan="2" style="padding: 0px; padding-top: 8px">
-                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_i1')"><span style="padding-left: 8px"><#AmneziaWG_ObfuscationProto#> (I1-I5):</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
+                                    <td colspan="2" style="padding-left: 0px; padding-right: 0px">
+                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_i1')"><span style="padding-left: 8px"><#AmneziaWG_ObfuscationProto#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
                                         <table width="100%" id="spoiler_vpnc_amnezia_i1" style="display: none; border: 0px;">
                                             <tr>
-                                                <td colspan="2" style="border: 0px">
-                                                    <textarea rows="8" wrap="on" spellcheck="false" maxlength="4096" class="span12" name="vpnc_awg_i1" style="font-family:'Courier New'; font-size:12px; resize:vertical;"><% nvram_get_x("", "vpnc_awg_i1"); %></textarea>
+                                                <th style="border: 0px" width="50%"><#AmneziaWG_Obfuscation#> I1:</th>
+                                                <td style="border: 0px">
+                                                    <input style="width: 310px" type="text" name="vpnc_awg_i1" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i1"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th width="50%"><#AmneziaWG_Obfuscation#> 2:</th>
+                                                <th><#AmneziaWG_Obfuscation#> I2:</th>
                                                 <td>
-                                                    <input type="text" name="vpnc_awg_i2" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i2"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i2" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i2"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th><#AmneziaWG_Obfuscation#> 3:</th>
+                                                <th><#AmneziaWG_Obfuscation#> I3:</th>
                                                 <td>
-                                                    <input type="text" name="vpnc_awg_i3" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i3"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i3" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i3"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th><#AmneziaWG_Obfuscation#> 4:</th>
+                                                <th><#AmneziaWG_Obfuscation#> I4:</th>
                                                 <td>
-                                                    <input type="text" name="vpnc_awg_i4" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i4"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i4" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i4"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th style="padding-bottom: 0px"><#AmneziaWG_Obfuscation#> 5:</th>
+                                                <th><#AmneziaWG_Obfuscation#> I5:</th>
+                                                <td>
+                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i5" class="input" maxlength="256" size="32" value="<% nvram_get_x("", "vpnc_awg_i5"); %>" onKeyPress="return is_string(this,event);"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="2" style="padding: 0px; padding-top: 8px">
+                                        <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_timeouts')"><span style="padding-left: 8px"><#AmneziaWG_Timeouts#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
+                                        <table width="100%" id="spoiler_vpnc_amnezia_timeouts" style="display: none; border: 0px">
+
+                                            <tr>
+                                                <th style="border: 0px" width="50%">Rekey after time, <#Second#>:</th>
+                                                <td style="border: 0px">
+                                                    <input name="vpnc_awg_RekeyAfterTime" value="<% nvram_get_x("", "vpnc_awg_RekeyAfterTime"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..300 ]</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th width="50%">Rekey timeout, <#Second#>:</th>
+                                                <td>
+                                                    <input name="vpnc_awg_RekeyTimeout" value="<% nvram_get_x("", "vpnc_awg_RekeyTimeout"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..300 ]</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th width="50%">Reject after time, <#Second#>:</th>
+                                                <td>
+                                                    <input name="vpnc_awg_RejectAfterTime" value="<% nvram_get_x("", "vpnc_awg_RejectAfterTime"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..300 ]</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th width="50%">Keepalive timeout, <#Second#>:</th>
+                                                <td>
+                                                    <input name="vpnc_awg_KeepaliveTimeout" value="<% nvram_get_x("", "vpnc_awg_KeepaliveTimeout"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..300 ]</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th style="padding-bottom: 0px" width="50%">Max handshake attempts:</th>
                                                 <td style="padding-bottom: 0px">
-                                                    <input type="text" name="vpnc_awg_i5" class="input" maxlength="256" size="32" value="<% nvram_get_x("", "vpnc_awg_i5"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input name="vpnc_awg_MaxHandshakeAttempts" value="<% nvram_get_x("", "vpnc_awg_MaxHandshakeAttempts"); %>">
+                                                    &nbsp;<span style="color:#888;">[ 0..300 ]</span>
                                                 </td>
                                             </tr>
                                         </table>
