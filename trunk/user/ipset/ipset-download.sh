@@ -13,18 +13,18 @@ error()
     exit 1
 }
 
-function angry-wget() {
-    local r=10
+angry_wget() {
+    local r=1
 
-    while [ $r -gt 0 ]; do
-        wget --no-check-certificate "$1" -O "$2" && return 0
-        r=$((r - 1))
+    while [ $r -lt 11 ]; do
+        wget --no-check-certificate "$1" -O "$2" && return 0 || sleep $r
+        r=$((r + 1))
     done
 
     return 1
 }
 
-function download() {
+download() {
     local tmp_file=/tmp/ipset-import.txt
     local name="$1"
     local url="$2"
@@ -32,7 +32,7 @@ function download() {
     [ -n "$name" ] || error "specify ipset name"
     [ -n "$url" ] || error "specify URL"
 
-    if angry-wget "$url" $tmp_file; then
+    if angry_wget "$url" $tmp_file; then
         log "successfully downloaded $url"
         ipset-import.sh "$name" $tmp_file
     else
