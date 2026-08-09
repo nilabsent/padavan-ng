@@ -267,9 +267,9 @@ restart_vpn_client(void)
 	restore_dns_from_vpnc();
 
 	sleep(1);
-	notify_rc(RCN_START_VPNCLI);
+	start_vpn_client();
 
-	notify_rc(RCN_RELOAD_FIREWALL);
+	restart_firewall();
 
 	/* restore L2TP WAN client or L2TP VPNS */
 	if (xl2tpd_killed_vpnc && (nvram_match("l2tp_wan_t", "1") || nvram_match("l2tp_srv_t", "1")))
