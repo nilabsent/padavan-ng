@@ -8,7 +8,7 @@ LDFLAGS += -Wl,--gc-sections
 
 all: download_test extract_test
 	cp -fL $(STAGEDIR)/busybox.config $(SRC_NAME)/.config
-	$(MAKE) -C $(SRC_NAME)
+	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME)
 
 download_test:
 	( if [ ! -f $(SRC_NAME).tar.bz2 ]; then \

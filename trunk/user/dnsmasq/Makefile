@@ -13,7 +13,7 @@ CFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden
 LDFLAGS += -Wl,--gc-sections
 
 all: download_test extract_test
-	$(MAKE) -C $(SRC_NAME) COPTS="$(COPTS)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
+	$(MAKE) -j$(HOST_NCPU) -C $(SRC_NAME) COPTS="$(COPTS)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"
 
 download_test:
 	( if [ ! -f $(SRC_NAME).tar.xz ]; then \
