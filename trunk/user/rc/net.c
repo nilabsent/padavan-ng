@@ -774,6 +774,7 @@ reload_nat_modules(void)
 #endif
 
 #if defined (USE_SFE)
+	int zapret_enable = nvram_safe_get_int("zapret_enable", 0, 0, 1);
 	int sfe_enable = nvram_safe_get_int("sfe_enable", 0, 0, 2);
 	int sfe_loaded = is_module_loaded("fast_classifier");
 
@@ -786,12 +787,17 @@ reload_nat_modules(void)
 	if (sfe_enable && !sfe_loaded) {
 		module_smart_load("fast_classifier", NULL);
 		sfe_loaded = 1;
-		fput_int("/proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal", 0);
+                if (zapret_enable) {
+        		fput_int("/proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal", 1);
+                } else {
+        		fput_int("/proc/sys/net/netfilter/nf_conntrack_tcp_be_liberal", 0);
+                }
 		fput_int("/proc/sys/net/netfilter/nf_conntrack_tcp_no_window_check", 0);
+		fput_int("/sys/fast_classifier/offload_at_pkts", 30);
 
 	}
 	if (sfe_loaded && ((sfe_enable == 1) || (sfe_enable == 2 ))) {
-			fput_int("/sys/fast_classifier/skip_to_bridge_ingress", sfe_enable - 1);
+		fput_int("/sys/fast_classifier/skip_to_bridge_ingress", sfe_enable - 1);
 	}
 #endif
 }
