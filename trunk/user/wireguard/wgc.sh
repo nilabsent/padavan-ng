@@ -145,9 +145,9 @@ setconf_wg()
                 i1 i2 i3 i4 i5 \
                 h1 h2 h3 h4 \
                 s1 s2 s3 s4 \
-                ContentPaddingAddition HeaderProtectionKey \
-                RekeyAfterTime RekeyTimeout RejectAfterTime \
-                KeepaliveTimeout MaxHandshakeAttempts
+                contentpaddingaddition headerprotectionkey \
+                rekeyaftertime rekeytimeout rejectaftertime \
+                keepalivetimeout maxhandshakeattempts
             do
                 nv=$(nvram get vpnc_awg_$i | tr -d '\n\r')
                 [ -n "$nv" ] && echo "$i = $nv"

@@ -160,9 +160,6 @@ function validForm(){
 		return false;
 
 	if (mode == "3") {
-		if(!validate_range(document.form.vpnc_wg_peer_keepalive, 0, 65535))
-		return false;
-
 		if (document.form.vpnc_wg_if_addr.value==""){
 			alert("<#JS_fieldblank#>");
 			document.form.vpnc_wg_if_addr.focus();
@@ -624,9 +621,9 @@ function wg_genhpk(){
 		'action': 'genkey'
 	},
 	function(response){
-		document.form.vpnc_awg_HeaderProtectionKey.value = response;
+		document.form.vpnc_awg_headerprotectionkey.value = response;
 	});
-	document.form.vpnc_awg_HeaderProtectionKey.focus();
+	document.form.vpnc_awg_headerprotectionkey.focus();
 }
 
 async function loadJSON(fileName) {
@@ -699,7 +696,7 @@ function wg_conf_import() {
 		if (found_app_awg()) {
 			loadJSON('amneziawg.json')
 				.then(data => {
-					const fields = ['jc', 'jmin', 'jmax', 'i1', 'i2', 'i3', 'i4', 'i5', 'h1', 'h2', 'h3', 'h4', 's1', 's2', 's3', 's4', 'ContentPaddingAddition', 'RekeyAfterTime', 'RekeyTimeout', 'RejectAfterTime', 'KeepaliveTimeout', 'MaxHandshakeAttempts', 'HeaderProtectionKey'];
+					const fields = ['jc', 'jmin', 'jmax', 'i1', 'i2', 'i3', 'i4', 'i5', 'h1', 'h2', 'h3', 'h4', 's1', 's2', 's3', 's4', 'contentpaddingaddition', 'rekeyaftertime', 'rekeytimeout', 'rejectaftertime', 'keepalivetimeout', 'maxhandshakeattempts', 'headerprotectionkey'];
 					fields.forEach(field => {
 						document.form[`vpnc_awg_${field}`].value = settings[field] || data[0][field] || '';
 					});
@@ -1197,7 +1194,7 @@ function vpnc_access_control() {
                                 <tr>
                                     <td colspan="2" style="padding-left: 0px; padding-right: 0px">
                                         <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_junk')"><span style="padding-left: 8px"><#AmneziaWG_JunkPackets#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
-                                        <table width="100%" id="spoiler_vpnc_amnezia_junk" style="display: none; border: 0px; border-left: 16px">
+                                        <table width="100%" id="spoiler_vpnc_amnezia_junk" style="display: none; border: 0px">
                                             <tr>
                                                 <th style="border: 0px" width="50%">Jc, <#AmneziaWG_Jc#>:</th>
                                                 <td style="border: 0px">
@@ -1229,14 +1226,14 @@ function vpnc_access_control() {
                                             <tr>
                                                 <th style="border: 0px" width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,26,3);">Header protection key</a>:</th>
                                                 <td style="border: 0px">
-                                                    <input style="-webkit-text-security: disc;" onfocus="vpnc_awg_HeaderProtectionKey.style='-webkit-text-security: unset;'" onblur="vpnc_awg_HeaderProtectionKey.style='-webkit-text-security: disc;';" type="text" name="vpnc_awg_HeaderProtectionKey" class="input" maxlength="44" size="32" value="<% nvram_get_x("", "vpnc_awg_HeaderProtectionKey"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input style="-webkit-text-security: disc;" onfocus="vpnc_awg_headerprotectionkey.style='-webkit-text-security: unset;'" onblur="vpnc_awg_headerprotectionkey.style='-webkit-text-security: disc;';" type="text" name="vpnc_awg_headerprotectionkey" class="input" maxlength="44" size="32" value="<% nvram_get_x("", "vpnc_awg_headerprotectionkey"); %>" onKeyPress="return is_string(this,event);"/>
                                                     <input type="button" class="btn btn-mini" style="outline:0" onclick="wg_genhpk();" value="<#CTL_refresh#>"/>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th>Content padding addition:</th>
                                                 <td>
-                                                    <input name="vpnc_awg_ContentPaddingAddition" value="<% nvram_get_x("", "vpnc_awg_ContentPaddingAddition"); %>">
+                                                    <input name="vpnc_awg_contentpaddingaddition" value="<% nvram_get_x("", "vpnc_awg_contentpaddingaddition"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..100 ]</span>
                                                 </td>
                                             </tr>
@@ -1342,35 +1339,35 @@ function vpnc_access_control() {
                                             <tr>
                                                 <th style="border: 0px" width="50%">Rekey after time, <#Second#>:</th>
                                                 <td style="border: 0px">
-                                                    <input name="vpnc_awg_RekeyAfterTime" value="<% nvram_get_x("", "vpnc_awg_RekeyAfterTime"); %>">
+                                                    <input name="vpnc_awg_rekeyaftertime" value="<% nvram_get_x("", "vpnc_awg_rekeyaftertime"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..300 ]</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th width="50%">Rekey timeout, <#Second#>:</th>
                                                 <td>
-                                                    <input name="vpnc_awg_RekeyTimeout" value="<% nvram_get_x("", "vpnc_awg_RekeyTimeout"); %>">
+                                                    <input name="vpnc_awg_rekeytimeout" value="<% nvram_get_x("", "vpnc_awg_rekeytimeout"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..300 ]</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th width="50%">Reject after time, <#Second#>:</th>
                                                 <td>
-                                                    <input name="vpnc_awg_RejectAfterTime" value="<% nvram_get_x("", "vpnc_awg_RejectAfterTime"); %>">
+                                                    <input name="vpnc_awg_rejectaftertime" value="<% nvram_get_x("", "vpnc_awg_rejectaftertime"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..300 ]</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th width="50%">Keepalive timeout, <#Second#>:</th>
                                                 <td>
-                                                    <input name="vpnc_awg_KeepaliveTimeout" value="<% nvram_get_x("", "vpnc_awg_KeepaliveTimeout"); %>">
+                                                    <input name="vpnc_awg_keepalivetimeout" value="<% nvram_get_x("", "vpnc_awg_keepalivetimeout"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..300 ]</span>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th style="padding-bottom: 0px" width="50%">Max handshake attempts:</th>
                                                 <td style="padding-bottom: 0px">
-                                                    <input name="vpnc_awg_MaxHandshakeAttempts" value="<% nvram_get_x("", "vpnc_awg_MaxHandshakeAttempts"); %>">
+                                                    <input name="vpnc_awg_maxhandshakeattempts" value="<% nvram_get_x("", "vpnc_awg_maxhandshakeattempts"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..300 ]</span>
                                                 </td>
                                             </tr>
