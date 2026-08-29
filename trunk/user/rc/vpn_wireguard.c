@@ -73,9 +73,15 @@ restart_wireguard_client(void)
 void
 reload_wireguard_client(void)
 {
+    char *lan_ip = nvram_safe_get("lan_ipaddr_t");
+
     // update ipset + fw rules
-    if (is_enabled_wireguard_client())
+    if (is_enabled_wireguard_client()) {
         eval("/usr/bin/wgc.sh", "reload");
+
+        if (is_valid_ipv4(lan_ip))
+            flush_conntrack_table(lan_ip);
+    }
 }
 
 void
