@@ -1306,25 +1306,25 @@ function vpnc_access_control() {
                                             <tr>
                                                 <th><#AmneziaWG_Obfuscation#> I2:</th>
                                                 <td>
-                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i2" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i2"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i2" class="input" maxlength="512" size="32" value="<% nvram_get_x("", "vpnc_awg_i2"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th><#AmneziaWG_Obfuscation#> I3:</th>
                                                 <td>
-                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i3" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i3"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i3" class="input" maxlength="512" size="32" value="<% nvram_get_x("", "vpnc_awg_i3"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th><#AmneziaWG_Obfuscation#> I4:</th>
                                                 <td>
-                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i4" class="input" maxlength="4096" size="32" value="<% nvram_get_x("", "vpnc_awg_i4"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i4" class="input" maxlength="512" size="32" value="<% nvram_get_x("", "vpnc_awg_i4"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <th><#AmneziaWG_Obfuscation#> I5:</th>
                                                 <td>
-                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i5" class="input" maxlength="256" size="32" value="<% nvram_get_x("", "vpnc_awg_i5"); %>" onKeyPress="return is_string(this,event);"/>
+                                                    <input style="width: 310px;" type="text" name="vpnc_awg_i5" class="input" maxlength="512" size="32" value="<% nvram_get_x("", "vpnc_awg_i5"); %>" onKeyPress="return is_string(this,event);"/>
                                                 </td>
                                             </tr>
                                         </table>
