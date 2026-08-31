@@ -109,9 +109,11 @@ wg_setdns()
 
 check_endpoint()
 {
+    echo $PEER_ENDPOINT | grep -qi '[a-z]' || return 0
+
     local r=5
     while [ $r -gt 0 ]; do
-        timeout 3 2>&1 nslookup $PEER_ENDPOINT >/dev/null 2>&1 && return 0
+        timeout 3 2>&1 /usr/bin/nslookup $PEER_ENDPOINT >/dev/null 2>&1 && return 0
         r=$((r - 1))
     done
     return 1
