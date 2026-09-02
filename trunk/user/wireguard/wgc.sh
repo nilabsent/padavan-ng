@@ -109,9 +109,11 @@ wg_setdns()
 
 check_endpoint()
 {
+    echo $PEER_ENDPOINT | grep -qi '[a-z]' || return 0
+
     local r=5
     while [ $r -gt 0 ]; do
-        timeout 3 2>&1 nslookup $PEER_ENDPOINT >/dev/null 2>&1 && return 0
+        timeout 3 2>&1 /usr/bin/nslookup $PEER_ENDPOINT >/dev/null 2>&1 && return 0
         r=$((r - 1))
     done
     return 1
@@ -145,9 +147,9 @@ setconf_wg()
                 i1 i2 i3 i4 i5 \
                 h1 h2 h3 h4 \
                 s1 s2 s3 s4 \
-                ContentPaddingAddition HeaderProtectionKey \
-                RekeyAfterTime RekeyTimeout RejectAfterTime \
-                KeepaliveTimeout MaxHandshakeAttempts
+                contentpaddingaddition headerprotectionkey \
+                rekeyaftertime rekeytimeout rejectaftertime \
+                keepalivetimeout maxhandshakeattempts
             do
                 nv=$(nvram get vpnc_awg_$i | tr -d '\n\r')
                 [ -n "$nv" ] && echo "$i = $nv"
