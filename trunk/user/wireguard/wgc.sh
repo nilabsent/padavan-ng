@@ -149,7 +149,8 @@ setconf_wg()
                 s1 s2 s3 s4 \
                 contentpaddingaddition headerprotectionkey \
                 rekeyaftertime rekeytimeout rejectaftertime \
-                keepalivetimeout maxhandshakeattempts
+                keepalivetimeout maxhandshakeattempts \
+                randomtrailers disablecookies
             do
                 nv=$(nvram get vpnc_awg_$i | tr -d '\n\r')
                 [ -n "$nv" ] && echo "$i = $nv"

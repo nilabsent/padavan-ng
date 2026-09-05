@@ -6,7 +6,7 @@ SRC_NAME = wireguard-tools-$(SRC_VER)
 SRC_URL = https://github.com/WireGuard/wireguard-tools/archive/refs/tags/v$(SRC_VER).tar.gz
 
 ifeq ($(CONFIG_FIRMWARE_INCLUDE_AMNEZIAWG),y)
-SRC_VER = 3.0.20260805
+SRC_VER = 3.1.20260812
 SRC_NAME = amneziawg-tools-$(SRC_VER)
 SRC_URL = https://github.com/amnezia-vpn/amneziawg-tools/archive/refs/tags/v$(SRC_VER).tar.gz
 endif

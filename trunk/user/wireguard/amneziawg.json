@@ -22,6 +22,8 @@
     "rekeytimeout": "5",
     "rejectaftertime": "180",
     "keepalivetimeout": "10",
-    "maxhandshakeattempts": "3"
+    "maxhandshakeattempts": "3",
+    "randomtrailers": "0",
+    "disablecookies": "0"
 }
 ]
