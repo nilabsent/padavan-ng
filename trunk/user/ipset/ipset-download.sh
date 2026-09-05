@@ -17,7 +17,7 @@ angry_wget() {
     local r=1
 
     while [ $r -lt 11 ]; do
-        wget --no-check-certificate "$1" -O "$2" && return 0 || sleep $r
+        wget -T10 --no-check-certificate "$1" -O "$2" && return 0 || sleep $r
         r=$((r + 1))
     done
 
