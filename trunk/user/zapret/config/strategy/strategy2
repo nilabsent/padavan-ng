@@ -1,16 +1,9 @@
 ### All arguments here: https://github.com/bol-van/zapret
 ### To enable ts fooling in Windows: netsh interface tcp set global timestamps=enabled
 
-### http
---filter-l7=http
-<HOSTLIST>
-#--hostlist-exclude=/etc/storage/zapret/exclude.list
---dpi-desync=hostfakesplit
---dpi-desync-fooling=md5sig
---dpi-desync-repeats=2
-
 ### https
---new --filter-l7=tls
+--filter-tcp=443
+--filter-l7=tls
 <HOSTLIST>
 #--hostlist-exclude=/etc/storage/zapret/exclude.list
 --dpi-desync=fake,fakedsplit
@@ -21,26 +14,48 @@
 --dpi-desync-split-seqovl=783
 --dpi-desync-split-seqovl-pattern=/usr/share/zapret/fake/tls_clienthello_www_google_com.bin
 
+### http
+--new
+--filter-tcp=80
+--filter-l7=http
+<HOSTLIST>
+#--hostlist-exclude=/etc/storage/zapret/exclude.list
+--dpi-desync=hostfakesplit
+--dpi-desync-fooling=md5sig
+--dpi-desync-repeats=2
+
 ### quic
---new --filter-l7=quic
+--new
+--filter-udp=443
+--filter-l7=quic
 <HOSTLIST_NOAUTO>
 #--hostlist-exclude=/etc/storage/zapret/exclude.list
 --dpi-desync=fake --dpi-desync-repeats=6
 --dpi-desync-fake-quic=/usr/share/zapret/fake/quic_initial_www_google_com.bin
 
-### wireguard, discord, stun
---new --filter-l7=wireguard,discord,stun
---dpi-desync=fake
+### wireguard
+--new
+--filter-udp=500-4500,5279,5956,7103-8886
+--filter-l7=wireguard
 --dpi-desync-cutoff=n2
+--dpi-desync=fake
+--dpi-desync-repeats=6
+--dpi-desync-fake-wireguard=0x00000000000000000000000000000000
+
+### discord
+--new
+--filter-udp=19294-19344,50000-50099
+--filter-l7=discord
+--dpi-desync-cutoff=n2
+--dpi-desync=fake
 --dpi-desync-repeats=6
 --dpi-desync-fake-discord=0x00000000000000000000000000000000
---dpi-desync-fake-wireguard=0x00000000000000000000000000000000
---dpi-desync-fake-stun=0x00000000000000000000000000000000
 
 ### games
---new --filter-udp=21000-21500,65530-65535
---dpi-desync=fake
+--new
+--filter-udp=21000-21500,65530-65535
 --dpi-desync-cutoff=n2
+--dpi-desync=fake
 --dpi-desync-any-protocol=1
 --dpi-desync-autottl=2
 --dpi-desync-repeats=6

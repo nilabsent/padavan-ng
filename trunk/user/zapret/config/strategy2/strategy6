@@ -7,9 +7,10 @@
 --blob=blank:0x00000000000000000000000000000000
 
 ### https, http
+--filter-tcp=443,80
 --filter-l7=http,tls
-<HOSTLIST>
-#--hostlist-exclude=/etc/storage/zapret/exclude.list
+#<HOSTLIST>
+--hostlist-exclude=/etc/storage/zapret/exclude.list
 --payload=tls_client_hello
 --lua-desync=fake:blob=blank:tcp_ts=-600000
 --lua-desync=fake:blob=fake_default_tls:tls_mod=rnd,dupsid,sni=www.7-zip.org:tcp_ts=-600000
@@ -18,18 +19,30 @@
 --lua-desync=hostfakesplit:repeats=2:tcp_md5
 
 ### quic
---new --filter-l7=quic
-<HOSTLIST_NOAUTO>
-#--hostlist-exclude=/etc/storage/zapret/exclude.list
+--new
+--filter-udp=443
+--filter-l7=quic
+#<HOSTLIST_NOAUTO>
+--hostlist-exclude=/etc/storage/zapret/exclude.list
 --payload=quic_initial
 --lua-desync=fake:blob=quic_google:repeats=6
 
-### wireguard, discord, stun
---new --filter-l7=wireguard,stun,discord
---payload=wireguard_initiation,wireguard_response,wireguard_cookie,stun,discord_ip_discovery
+### wireguard
+--new
+--filter-udp=500-4500,5279,5956,7103-8886
+--filter-l7=wireguard
+--payload=wireguard_initiation,wireguard_response,wireguard_cookie
+--lua-desync=fake:blob=blank:repeats=6
+
+### discord
+--new
+--filter-udp=19294-19344,50000-50099
+--filter-l7=discord
+--payload=discord_ip_discovery
 --lua-desync=fake:blob=blank:repeats=6
 
 ### games
---new --filter-udp=21000-21500,49152-65535
+--new
+--filter-udp=21000-21500,49152-65535
 --out-range=-n1
 --lua-desync=fake:blob=quic_google:payload=~empty:ip_autottl=2:repeats=6
