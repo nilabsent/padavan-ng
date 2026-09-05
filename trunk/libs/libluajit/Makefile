@@ -1,8 +1,7 @@
 # https://github.com/LuaJIT
 
-SRC_NAME = LuaJIT-2.1.ROLLING
-SRC_URL = https://github.com/LuaJIT/LuaJIT/archive/refs/tags/v2.1.ROLLING.tar.gz
-
+SRC_NAME = luajit-2.1-24c20c9
+SRC_URL = https://github.com/LuaJIT/LuaJIT/archive/refs/heads/v2.1.tar.gz
 CFLAGS += -I$(STAGEDIR)/include -L$(STAGEDIR)/lib -DLUAJIT_DISABLE_FFI -DLUAJIT_DISABLE_GC64
 
 all: download_test extract_test
@@ -16,12 +15,14 @@ all: download_test extract_test
 
 download_test:
 	( if [ ! -f $(SRC_NAME).tar.gz ]; then \
-		wget -t5 -T20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL) || rm -f $(SRC_NAME).tar.gz; \
+		wget -t5 -T20 --no-check-certificate -O $(SRC_NAME).tar.gz $(SRC_URL) \
+			|| rm -f $(SRC_NAME).tar.gz; \
 	fi )
 
 extract_test:
 	( if [ ! -d $(SRC_NAME) ]; then \
-		tar xf $(SRC_NAME).tar.gz; \
+		mkdir -p $(SRC_NAME) \
+			&& tar -zx --strip-components=1 -f $(SRC_NAME).tar.gz -C $(SRC_NAME); \
 	fi )
 
 clean:
