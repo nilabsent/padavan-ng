@@ -13,9 +13,16 @@ STRATEGY_FILE="$CONF_DIR/strategy"
 PID_FILE="/var/run/zapret.pid"
 POST_SCRIPT="$CONF_DIR/post_script.sh"
 
+STARTUP_CONF="/tmp/zapret.conf"
+
 DESYNC_MARK="0x40000000"
 # mark allowed clients
 FILTER_MARK="0x10000000"
+
+DEFAULT_TCP_PORTS="80,443"
+DEFAULT_UDP_PORTS="443"
+# when port value is *
+DEFAULT_ALL_PORTS="80-65535"
 
 NFQUEUE_NUM=200
 USER="nobody"
@@ -50,7 +57,7 @@ unset IPSET
 log()
 {
     [ -n "$*" ] || return
-    echo "$@"
+    echo "$@" >&2
     local pid
     [ -f "$PID_FILE" ] && pid="[$(cat "$PID_FILE" 2>/dev/null)]"
     logger -t "zapret${NFQWS_VER}$pid" "$@"
@@ -60,13 +67,6 @@ error()
 {
     log "$@"
     exit 1
-}
-
-get_if_default()
-{
-    # $1 = 4  - ipv4
-    # $1 = 6  - ipv6
-    ip -$1 route show default | grep via | sed -r 's/^.*default.*via.* dev ([^ ]+).*$/\1/' | head -n1
 }
 
 isp_is_present()
@@ -98,33 +98,29 @@ kernel_modules()
     done
 }
 
-replace_str()
-{
-    local a=$(echo "$1" | sed 's/\//\\\//g')
-    local b=$(echo "$2" | tr -s '\n' ' ' | sed 's/\//\\\//g')
-    shift; shift
-    echo "$@" | tr -s '\n' ' ' | sed "s/$a/$b/g; s/[ \t]\{1,\}/ /g"
-}
-
 startup_args()
 {
-    echo "--user=$USER --qnum=$NFQUEUE_NUM"
+    echo "--daemon"
+    echo "--pidfile=$PID_FILE"
+    echo "--user=$USER"
+    echo "--qnum=$NFQUEUE_NUM"
     [ "$LOG_LEVEL" = "1" ] && echo "--debug=syslog"
 
     if [ "$NFQWS_VER" = "2" ]; then
         local i lua="$CONF_DIR_EXAMPLE/lua"
 
         [ -x "${NFQWS_BIN_GIT}$NFQWS_VER" ] && [ -d "/tmp/zapret2/lua" ] \
-        && lua="/tmp/zapret2/lua"
+            && lua="/tmp/zapret2/lua"
 
         for i in $(find "$lua" -maxdepth 1 -name "*.lua" -o -name "*.lua.gz"); do
             echo "--lua-init=@$i"
         done
     fi
 
-    local strategy="$(grep -v '^[[:space:]]*#' "$STRATEGY_FILE" | tr -d '"')"
-    strategy=$(replace_str "$HOSTLIST_MARKER" "$HOSTLIST" "$strategy")
-    strategy=$(replace_str "$HOSTLIST_NOAUTO_MARKER" "$HOSTLIST_NOAUTO" "$strategy")
+    local strategy="$(grep -v '^[[:space:]]*#' "$STRATEGY_FILE")"
+    strategy="${strategy//$HOSTLIST_MARKER/$HOSTLIST}"
+    strategy="${strategy//$HOSTLIST_NOAUTO_MARKER/$HOSTLIST_NOAUTO}"
+
     echo "$strategy"
 }
 
@@ -138,8 +134,8 @@ ipset_create_exclude()
 {
     [ -n "$IPSET" ] || return
 
-    ipset -q destroy nozapret$1
     ipset -q create nozapret$1 nethash family inet$1
+    ipset -q flush nozapret$1
 
     local i
     if [ -n "$1" ]; then
@@ -168,45 +164,160 @@ ipset_exclude()
 {
     [ -n "$IPSET" ] || return
 
-    echo "-m set ! --match-set nozapret$1 $2"
+    echo "-m set ! --match-set nozapret$2 $1"
+}
+
+get_ipset_name_hash()
+{
+    # converting ipset name into hash
+
+    [ -n "$1" ] || return
+
+    case "$1" in
+        0x*)
+            return 1
+        ;;
+
+        *[!0-9]*)
+            echo "0x$(echo -n "$1" | md5sum | cut -c1-7)"
+        ;;
+
+        *)
+            return 1
+        ;;
+    esac
+}
+
+get_ipset_name_fwmark()
+{
+    # get ipset names from --filter-mark
+    # reverse sorting by word length for safe replacement with a hash
+
+    awk '
+        !/^[[:space:]]*#/{
+            for(i=1; i<=NF; i++)
+                if($i ~ /^--filter-mark=/) {
+                    v=substr($i, 15)
+                    if(v !~ /^0x/ && v ~ /[a-zA-Z]/)
+                        print length(v), v
+            }
+        }
+    ' $STRATEGY_FILE | sort -u | sort -nr | cut -d' ' -f2-
+}
+
+get_strategy_ports()
+{
+    local proto="$1"
+    local default_ports
+
+    if [ "$proto" = "tcp" ]; then
+        default_ports="$DEFAULT_TCP_PORTS"
+    elif [ "$proto" = "udp" ]; then
+        default_ports="$DEFAULT_UDP_PORTS"
+    else
+        return 1
+    fi
+
+    awk -v proto="$proto" \
+        -v def_ports="$default_ports" \
+        -v all_ports="$DEFAULT_ALL_PORTS" '
+
+        /^[[:space:]]*#/ { next }
+        {
+            line = $0
+            while (match(line, "--filter-" proto "=[0-9*~,-]+")) {
+                str = substr(line, RSTART, RLENGTH)
+                sub(/^[^=]*=/, "", str)
+
+                n = split(str, ports_arr, ",")
+                for (i = 1; i <= n; i++) {
+                    p = ports_arr[i]
+
+                    if (p ~ /~/) continue
+
+                    gsub(/\*/, all_ports, p)
+                    gsub(/-/, ":", p)
+
+                    print p
+                }
+
+                line = substr(line, RSTART + RLENGTH)
+            }
+        }
+        END {
+            n = split(def_ports, def_arr, ",")
+            for (i = 1; i <= n; i++) print def_arr[i]
+        }
+    ' "$STRATEGY_FILE" | sort -u
+}
+
+get_port_list()
+{
+    # set limit for multiport iptables
+
+    local port_limit=7
+
+    echo "$1" | xargs -n $port_limit | tr ' ' ','
+}
+
+cb()
+{
+    echo "-m connbytes --connbytes-dir $1 --connbytes-mode packets --connbytes 1:$2"
 }
 
 set_chain_rules()
 {
-    local i filter
-    local jnfq="-j NFQUEUE --queue-num $NFQUEUE_NUM --queue-bypass"
-    local check_mark="-m mark ! --mark $DESYNC_MARK/$DESYNC_MARK"
-
-    # enable only for ipv4
     # $1 = "6" - sign that it is ipv6
-    if [ "$CLIENTS_ALLOWED" -a ! "$1" ]; then
+
+    local i port filter hash
+    local jnfq="-j NFQUEUE --queue-num $NFQUEUE_NUM --queue-bypass"
+
+    # allowed clients enable only for ipv4
+    if [ -n "$CLIENTS_ALLOWED" ] && [ -z "$1" ]; then
         filter="-m mark --mark $FILTER_MARK/$FILTER_MARK"
 
         echo "-A zapret_out -j MARK --or-mark $FILTER_MARK"
         for i in $CLIENTS_ALLOWED; do
-            echo "-A zapret_clients -s $i -j MARK --or-mark $FILTER_MARK"
+            echo "-A zapret_mark -s $i -j MARK --or-mark $FILTER_MARK"
         done
     fi
 
+    # create iptables rules for ipset mark, mark = ipset name hash
+    [ -z "$1" ] && for i in $IPSET_FWMARK; do
+        if hash=$(get_ipset_name_hash "$i"); then
+            ipset -q create $i nethash family inet \
+            && log "'$i' created successfully"
+
+            echo "-A zapret_mark -m set --match-set $i dst -j MARK --or-mark $hash"
+        fi
+    done
+
     for i in $ISP_IF; do
-        echo "-A zapret_pre -i $i $(ipset_exclude "$1" src) $jnfq"
-        echo "-A zapret_post -o $i $check_mark $filter $(ipset_exclude "$1" dst) $jnfq"
+        echo "-A zapret_pre -i $i $(ipset_exclude src $1) $jnfq"
+
+        for port in $(get_port_list "$TCP_PORTS"); do
+            echo "-A zapret_post -o $i -p tcp -m multiport --dports $port $filter $(ipset_exclude dst $1) $jnfq"
+        done
+
+        for port in $(get_port_list "$UDP_PORTS"); do
+            echo "-A zapret_post -o $i -p udp -m multiport --dports $port $filter $(ipset_exclude dst $1) $jnfq"
+        done
     done
 }
 
 set_fw_rules()
 {
-    cb(){ echo "-m connbytes --connbytes-dir=$1 --connbytes-mode=packets --connbytes 1:$2"; }
+    local check_mark="-m mark ! --mark $DESYNC_MARK/$DESYNC_MARK"
 
     echo "
--$1 PREROUTING -j zapret_clients
+-$1 PREROUTING -j zapret_mark
 -$1 OUTPUT -j zapret_out
 -$1 INPUT -p tcp $(cb reply 10) -m multiport --sports 80,443 -j zapret_pre
 -$1 INPUT -p udp $(cb reply 3) --sport 443 -j zapret_pre
 -$1 FORWARD -p tcp $(cb reply 10) -m multiport --sports 80,443 -j zapret_pre
 -$1 FORWARD -p udp $(cb reply 3) --sport 443 -j zapret_pre
--$1 POSTROUTING -p tcp $(cb original 20) -m multiport --dports 80,443,1024:65535 -j zapret_post
--$1 POSTROUTING -p udp $(cb original 5) -m multiport --dports 443,1024:65535 -j zapret_post
+-$1 POSTROUTING -p tcp $check_mark $(cb original 20) -j zapret_post
+-$1 POSTROUTING -p udp $check_mark $(cb original 5) -j zapret_post
 "
 }
 
@@ -221,11 +332,11 @@ $(set_fw_rules D)
 -F zapret_pre
 -F zapret_post
 -F zapret_out
--F zapret_clients
+-F zapret_mark
 -X zapret_pre
 -X zapret_post
 -X zapret_out
--X zapret_clients
+-X zapret_mark
 COMMIT
 EOF
     done
@@ -247,8 +358,8 @@ iptables_start()
 :zapret_pre - [0:0]
 :zapret_post - [0:0]
 :zapret_out - [0:0]
-:zapret_clients - [0:0]
-$(set_fw_rules A)
+:zapret_mark - [0:0]
+$(set_fw_rules I)
 $(set_chain_rules $i)
 COMMIT
 EOF
@@ -304,6 +415,8 @@ set_strategy_file()
 
 start_service()
 {
+    local i hash
+
     [ -s "$NFQWS_BIN" -a -x "$NFQWS_BIN" ] || error "$NFQWS_BIN: not found or invalid"
     if is_running; then
         echo "already running"
@@ -313,18 +426,25 @@ start_service()
     kernel_modules
     local pattern=$(create_random_pattern_files)
 
-    res=$($NFQWS_BIN --daemon --pidfile=$PID_FILE $(startup_args) 2>&1)
+    [ -d "$STARTUP_CONF" ] && rm -rf "$STARTUP_CONF"
+    echo "$(startup_args)" > "$STARTUP_CONF"
+
+    # replace ipset names with hash in STARTUP_CONF
+    for i in $IPSET_FWMARK; do
+        if hash=$(get_ipset_name_hash "$i"); then
+            sed -i "s|--filter-mark=$i|--filter-mark=$hash/$hash|g" "$STARTUP_CONF"
+        fi
+    done
+
+    res=$($NFQWS_BIN @"$STARTUP_CONF" 2>&1)
     if [ ! "$?" = "0" ]; then
-        log "failed to start: $(echo "$res" | head -n1)"
-        echo "$res" | head -n3 | grep -v 'github version' \
-        | while read -r i; do
-            log "$i"
-        done
+        log "failed to start $(basename $NFQWS_BIN): $(echo "$res" | head -n3 | grep -Ev '^$|github version')"
         exit 1
     fi
 
     log "started $(basename $NFQWS_BIN), $(echo "$res" | grep 'github version')"
-    [ "$CLIENTS_ALLOWED" ] && log "allowed clients: $CLIENTS_ALLOWED"
+    [ -n "$CLIENTS_ALLOWED" ] && log "allowed clients: "$CLIENTS_ALLOWED
+    [ -n "$IPSET_FWMARK" ] && log "use ipsets: "$IPSET_FWMARK
     log "use strategy from $STRATEGY_FILE"
     log "$pattern"
     echo "$res" \
@@ -355,12 +475,14 @@ reload_service()
     kill -HUP $(cat "$PID_FILE")
 }
 
-function angry-wget() {
-    local r=10
-    while [ $r -gt 0 ]; do
-        wget -t10 -T20 --no-check-certificate "$1" -O "$2" && return 0
-        r=$((r - 1))
+angry_wget() {
+    local r=1
+
+    while [ $r -lt 11 ]; do
+        wget -T10 --no-check-certificate "$1" -O "$2" && return 0 || sleep $r
+        r=$((r + 1))
     done
+
     return 1
 }
 
@@ -398,7 +520,7 @@ download_nfqws()
             curl -SL --retry 10 --retry-all-errors --progress-bar "$URL" -o $archive \
                 || error "unable to download $URL"
         else
-            angry-wget "$URL" $archive \
+            angry_wget "$URL" $archive \
                 || error "unable to download $URL"
         fi
     else
@@ -414,7 +536,7 @@ download_nfqws()
                   | tr ',' '\n' | grep 'browser_download_url.*openwrt-embedded' | cut -d '"' -f4)
             [ -n "$URL" ] || error "unable to get archive link"
 
-            angry-wget "$URL" $archive \
+            angry_wget "$URL" $archive \
                 || error "unable to download: $URL"
         fi
     fi
@@ -453,7 +575,7 @@ download_list()
     if [ -x /usr/bin/curl ]; then
         curl -SL --connect-timeout 20 --progress-bar "$HOSTLIST_DOMAINS" -o $list || error "unable to download $HOSTLIST_DOMAINS"
     else
-        angry-wget "$HOSTLIST_DOMAINS" $list || error "unable to download $HOSTLIST_DOMAINS"
+        angry_wget "$HOSTLIST_DOMAINS" $list || error "unable to download $HOSTLIST_DOMAINS"
     fi
 
     [ -s "$list" ] && log "downloaded successfully: $HOSTLIST_DOMAINS"
@@ -476,20 +598,22 @@ touch /tmp/filter.list
 
 ISP_IF="$(nvram get zapret_iface | tr -s ' ,' '\n' | sort -u)"
 if [ -z "$ISP_IF" ]; then
-    ISP_IF4=$(get_if_default 4)
-    [ -n "$ISP_IF4" ] || ISP_IF4="$(nvram get wan0_ifname)"
-
-    ISP_IF6=$(get_if_default 6)
-    [ -n "$ISP_IF6" ] || ISP_IF6="$(nvram get wan0_ifname6)"
+    ISP_IF4="$(nvram get wan0_ifname)"
+    ISP_IF6="$(nvram get wan0_ifname6)"
 
     ISP_IF=$(printf "%s\n" $ISP_IF4 $ISP_IF6 | sort -u)
 fi
 
 LOG_LEVEL="$(nvram get zapret_log)"
-CLIENTS_ALLOWED="$(nvram get zapret_clients_allowed | tr -s ',' ' ')"
+CLIENTS_ALLOWED="$(nvram get zapret_clients_allowed | tr -s ',' '\n')"
 
 STRATEGY_FILE="${STRATEGY_FILE}$(nvram get zapret_strategy)"
 set_strategy_file "$2"
+
+TCP_PORTS=$(get_strategy_ports tcp)
+UDP_PORTS=$(get_strategy_ports udp)
+
+IPSET_FWMARK="$(get_ipset_name_fwmark)"
 
 # nfqws2 support
 unset NFQWS_VER
