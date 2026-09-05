@@ -201,26 +201,6 @@ static void keep_key_fresh(struct wg_peer *peer)
 		wg_packet_send_queued_handshake_initiation(peer, false);
 }
 
-static unsigned int randomize_skb_padding(struct sk_buff *skb, u16_range_t addition_range)
-{
-	unsigned int packet_size = skb->len, space;
-	u16 addition;
-
-	if (u16_range_is_zero(addition_range))
-		return 0;
-
-	addition = u16_range_pick_one(addition_range);
-	if (likely(PACKET_CB(skb)->mtu)) {
-		if (unlikely(packet_size > PACKET_CB(skb)->mtu))
-			packet_size %= PACKET_CB(skb)->mtu;
-
-		space = PACKET_CB(skb)->mtu - packet_size;
-		if (addition > space)
-			addition = space;
-	}
-	return addition;
-}
-
 static unsigned int calculate_skb_padding(struct sk_buff *skb)
 {
 	unsigned int padded_size, last_unit = skb->len;
@@ -242,17 +222,27 @@ static unsigned int calculate_skb_padding(struct sk_buff *skb)
 	return padded_size - last_unit;
 }
 
-static bool encrypt_packet(struct wg_device *wg, struct sk_buff *skb, struct noise_keypair *keypair
+static bool encrypt_packet(struct sk_buff *skb, struct noise_keypair *keypair
 	COMPAT_MAYBE_SIMD_CONTEXT(simd_context_t *simd_context))
 {
-	unsigned int padding_len, plaintext_len, trailer_len;
+	struct wg_peer *peer = keypair->entry.peer;
+	unsigned int padding_len, plaintext_len, trailer_len, packet_len;
 	struct scatterlist sg[MAX_SKB_FRAGS + 8];
 	struct chacha_state state;
 	struct message_data *header;
 	struct sk_buff *trailer;
 	char *crypto;
 	int num_frags;
-	int padding = wg->transport_padding;
+	unsigned int udp_window;
+	int padding;
+	u16_range_t content_padding_addition;
+
+	padding = peer->device->transport_padding;
+	content_padding_addition = peer->device->content_padding_addition;
+
+	udp_window = padding + MESSAGE_MINIMUM_LENGTH + skb->len;
+	if (READ_ONCE(peer->udp_window) < udp_window)
+		WRITE_ONCE(peer->udp_window, udp_window);
 
 	/* Force hash calculation before encryption so that flow analysis is
 	 * consistent over the inner packet.
@@ -260,9 +250,15 @@ static bool encrypt_packet(struct wg_device *wg, struct sk_buff *skb, struct noi
 	skb_get_hash(skb);
 
 	/* Calculate lengths. */
-	padding_len = !u16_range_is_zero(wg->content_padding_addition) ?
-		randomize_skb_padding(skb, wg->content_padding_addition) :
-		calculate_skb_padding(skb);
+	packet_len = skb->len + MESSAGE_MINIMUM_LENGTH + padding;
+	if (!u16_range_is_zero(content_padding_addition)) {
+		padding_len = wg_peer_skb_randomize_padding_addition(peer, peer->device, packet_len);
+	} else if (peer->device->random_trailers) {
+		padding_len = wg_peer_skb_random_trailer(peer, peer->device, packet_len);
+	} else {
+		padding_len = calculate_skb_padding(skb);
+	}
+
 	trailer_len = padding_len + noise_encrypted_len(0);
 	plaintext_len = skb->len + padding_len;
 
@@ -294,7 +290,8 @@ static bool encrypt_packet(struct wg_device *wg, struct sk_buff *skb, struct noi
 	skb_set_inner_network_header(skb, 0);
 #endif
 	header = (struct message_data *)skb_push(skb, sizeof(*header));
-	header->header.type = cpu_to_le32(u32_range_pick_one(wg->transport_header));
+	header->header.type = cpu_to_le32(
+		u32_range_pick_one(peer->device->transport_header));
 	header->key_idx = keypair->remote_index;
 	header->counter = cpu_to_le64(PACKET_CB(skb)->nonce);
 	pskb_put(skb, trailer, trailer_len);
@@ -302,7 +299,7 @@ static bool encrypt_packet(struct wg_device *wg, struct sk_buff *skb, struct noi
 	crypto = skb_push(skb, padding);
 	get_random_bytes(crypto, padding);
 
-	if (awg_header_protection_init(&state, wg, crypto))
+	if (awg_header_protection_init(&state, peer->device, crypto))
 		chacha20_crypt(&state, (u8*)header, (u8*)header, sizeof(*header));
 
 	/* Now we can encrypt the scattergather segments */
@@ -346,8 +343,10 @@ static void wg_packet_create_data_done(struct wg_peer *peer, struct sk_buff *fir
 	wg_timers_any_authenticated_packet_traversal(peer);
 	wg_timers_any_authenticated_packet_sent(peer);
 	skb_list_walk_safe(first, skb, next) {
+		bool is_keepalive = PACKET_CB(skb)->is_keepalive;
+
 		if (likely(!wg_socket_send_skb_to_peer(peer, skb,
-				PACKET_CB(skb)->ds) && !PACKET_CB(skb)->is_keepalive))
+				PACKET_CB(skb)->ds) && !is_keepalive))
 			data_sent = true;
 	}
 
@@ -387,7 +386,6 @@ void wg_packet_encrypt_worker(struct work_struct *work)
 	struct crypt_queue *queue = container_of(work, struct multicore_worker,
 						 work)->ptr;
 	struct sk_buff *first, *skb, *next;
-	struct wg_device *wg;
 
 #ifdef COMPAT_CRYPTO_IS_ZINC
 	simd_context_t simd_context;
@@ -397,10 +395,7 @@ void wg_packet_encrypt_worker(struct work_struct *work)
 		enum packet_state state = PACKET_STATE_CRYPTED;
 
 		skb_list_walk_safe(first, skb, next) {
-			wg = PACKET_PEER(first)->device;
-
 			if (likely(encrypt_packet(
-						  wg,
 						  skb,
 						  PACKET_CB(first)->keypair
 						  COMPAT_MAYBE_SIMD_CONTEXT(&simd_context)))) {
