@@ -696,9 +696,29 @@ function wg_conf_import() {
 		if (found_app_awg()) {
 			loadJSON('amneziawg.json')
 				.then(data => {
-					const fields = ['jc', 'jmin', 'jmax', 'i1', 'i2', 'i3', 'i4', 'i5', 'h1', 'h2', 'h3', 'h4', 's1', 's2', 's3', 's4', 'contentpaddingaddition', 'rekeyaftertime', 'rekeytimeout', 'rejectaftertime', 'keepalivetimeout', 'maxhandshakeattempts', 'headerprotectionkey'];
+					const fields = [
+						'jc', 'jmin', 'jmax',
+						'i1', 'i2', 'i3', 'i4', 'i5',
+						'h1', 'h2', 'h3', 'h4',
+						's1', 's2', 's3', 's4',
+						'contentpaddingaddition', 'headerprotectionkey',
+						'rekeyaftertime', 'rekeytimeout', 'rejectaftertime',
+						'keepalivetimeout', 'maxhandshakeattempts',
+						'randomtrailers', 'disablecookies'
+					];
+					const normalizeMap = {
+						'0': '0', 'off': '0',
+						'1': '1', 'on': '1'
+					};
+
 					fields.forEach(field => {
-						document.form[`vpnc_awg_${field}`].value = settings[field] || data[0][field] || '';
+						let value = settings[field] || data[0][field] || '';
+
+						if (field === 'randomtrailers' || field === 'disablecookies') {
+							value = normalizeMap[value] ?? '0';
+						}
+
+						document.form[`vpnc_awg_${field}`].value = value;
 					});
 				});
 		}
@@ -955,7 +975,7 @@ function vpnc_access_control() {
                                             <tr>
                                                 <th><#VPNC_WG_KeepAlive#>:</th>
                                                 <td>
-                                                    <input type="text" name="vpnc_wg_peer_keepalive" class="input" maxlength="5" size="32" value="<% nvram_get_x("", "vpnc_wg_peer_keepalive"); %>" onKeyPress="return is_number(this,event);"/>
+                                                    <input type="text" name="vpnc_wg_peer_keepalive" class="input" maxlength="5" size="32" value="<% nvram_get_x("", "vpnc_wg_peer_keepalive"); %>" onKeyPress="return is_string(this,event);"/>
                                                     &nbsp;<span style="color:#888;">[ 0..65535 ]</span>
                                                 </td>
                                             </tr>
@@ -1192,6 +1212,15 @@ function vpnc_access_control() {
                                     <th colspan="2" style="background-color: #E3E3E3;"><#AmneziaWG_Params#></th>
                                 </tr>
                                 <tr>
+                                    <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,26,5);">Disable cookies</a>:</th>
+                                    <td>
+                                        <select name="vpnc_awg_disablecookies" id="vpnc_awg_disablecookies" class="input">
+                                            <option value="0" <% nvram_match_x("", "vpnc_awg_disablecookies", "0","selected"); %>><#CTL_Disabled#></option>
+                                            <option value="1" <% nvram_match_x("", "vpnc_awg_disablecookies", "1","selected"); %>><#CTL_Enabled#></option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td colspan="2" style="padding-left: 0px; padding-right: 0px">
                                         <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_junk')"><span style="padding-left: 8px"><#AmneziaWG_JunkPackets#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
                                         <table width="100%" id="spoiler_vpnc_amnezia_junk" style="display: none; border: 0px">
@@ -1235,6 +1264,15 @@ function vpnc_access_control() {
                                                 <td>
                                                     <input name="vpnc_awg_contentpaddingaddition" value="<% nvram_get_x("", "vpnc_awg_contentpaddingaddition"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..100 ]</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this,26,4);">Random trailers</a>:</th>
+                                                <td>
+                                                    <select name="vpnc_awg_randomtrailers" id="vpnc_awg_randomtrailers" class="input">
+                                                        <option value="0" <% nvram_match_x("", "vpnc_awg_randomtrailers", "0","selected"); %>><#CTL_Disabled#></option>
+                                                        <option value="1" <% nvram_match_x("", "vpnc_awg_randomtrailers", "1","selected"); %>><#CTL_Enabled#></option>
+                                                    </select>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -1292,7 +1330,6 @@ function vpnc_access_control() {
                                         </table>
                                     </td>
                                 </tr>
-
                                 <tr>
                                     <td colspan="2" style="padding-left: 0px; padding-right: 0px">
                                         <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_i1')"><span style="padding-left: 8px"><#AmneziaWG_ObfuscationProto#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
@@ -1330,9 +1367,8 @@ function vpnc_access_control() {
                                         </table>
                                     </td>
                                 </tr>
-
                                 <tr>
-                                    <td colspan="2" style="padding: 0px; padding-top: 8px">
+                                    <td colspan="2" style="padding: 8px 0 0 0">
                                         <a href="javascript:spoiler_toggle('spoiler_vpnc_amnezia_timeouts')"><span style="padding-left: 8px"><#AmneziaWG_Timeouts#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
                                         <table width="100%" id="spoiler_vpnc_amnezia_timeouts" style="display: none; border: 0px">
 
@@ -1344,28 +1380,28 @@ function vpnc_access_control() {
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th width="50%">Rekey timeout, <#Second#>:</th>
+                                                <th>Rekey timeout, <#Second#>:</th>
                                                 <td>
                                                     <input name="vpnc_awg_rekeytimeout" value="<% nvram_get_x("", "vpnc_awg_rekeytimeout"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..300 ]</span>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th width="50%">Reject after time, <#Second#>:</th>
+                                                <th>Reject after time, <#Second#>:</th>
                                                 <td>
                                                     <input name="vpnc_awg_rejectaftertime" value="<% nvram_get_x("", "vpnc_awg_rejectaftertime"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..300 ]</span>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th width="50%">Keepalive timeout, <#Second#>:</th>
+                                                <th>Keepalive timeout, <#Second#>:</th>
                                                 <td>
                                                     <input name="vpnc_awg_keepalivetimeout" value="<% nvram_get_x("", "vpnc_awg_keepalivetimeout"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..300 ]</span>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th style="padding-bottom: 0px" width="50%">Max handshake attempts:</th>
+                                                <th style="padding-bottom: 0px">Max handshake attempts:</th>
                                                 <td style="padding-bottom: 0px">
                                                     <input name="vpnc_awg_maxhandshakeattempts" value="<% nvram_get_x("", "vpnc_awg_maxhandshakeattempts"); %>">
                                                     &nbsp;<span style="color:#888;">[ 0..300 ]</span>

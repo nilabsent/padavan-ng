@@ -718,6 +718,8 @@
 			{"vpnc_awg_keepalivetimeout", "", NULL, EVM_RESTART_VPNCLI},
 			{"vpnc_awg_maxhandshakeattempts", "", NULL, EVM_RESTART_VPNCLI},
 			{"vpnc_awg_headerprotectionkey", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_randomtrailers", "", NULL, EVM_RESTART_VPNCLI},
+			{"vpnc_awg_disablecookies", "", NULL, EVM_RESTART_VPNCLI},
 #endif
 #if defined(APP_OPENVPN)
 			{"vpns_ov_mode", "", NULL, EVM_RESTART_VPNSVR},

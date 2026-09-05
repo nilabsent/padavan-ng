@@ -867,6 +867,8 @@ struct nvram_pair router_defaults[] = {
 	{ "vpnc_awg_keepalivetimeout", "10" },
 	{ "vpnc_awg_maxhandshakeattempts", "3" },
 	{ "vpnc_awg_headerprotectionkey", "" },
+	{ "vpnc_awg_randomtrailers", "0" },
+	{ "vpnc_awg_disablecookies", "0" },
 #endif
 	{ 0, 0 }
 };

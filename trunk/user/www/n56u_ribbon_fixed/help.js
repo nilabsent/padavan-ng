@@ -193,7 +193,9 @@ helpcontent[25] = new Array("",
 helpcontent[26] = new Array("",
 				"<#WG_External_address_desc#>",
 				"<#WG_Private_key_desc#>",
-				"<#AmneziaWG_HeaderProtectionKey_desc#>");
+				"<#AmneziaWG_HeaderProtectionKey_desc#>",
+				"<#AmneziaWG_RandomTrailers_desc#>",
+				"<#AmneziaWG_DisableCookies_desc#>");
 
 function openTooltip(obj, hint_array_id, hint_show_id)
 {
