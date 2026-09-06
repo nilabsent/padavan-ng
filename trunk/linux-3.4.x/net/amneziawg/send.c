@@ -53,7 +53,7 @@ static void wg_packet_send_handshake_initiation(struct wg_peer *peer)
 		if (spec->pkt_size > 0) {
 			mutex_lock(&spec->lock);
 			jp_spec_applymods(spec, peer);
-			wg_socket_send_buffer_to_peer(peer, spec->pkt, spec->pkt_size, 0, 0);
+			wg_socket_send_buffer_to_peer(peer, spec->pkt, spec->pkt_size, 0, 0, false);
 			atomic_inc(&peer->jp_packet_counter);
 			mutex_unlock(&spec->lock);
 		}
@@ -72,7 +72,7 @@ static void wg_packet_send_handshake_initiation(struct wg_peer *peer)
 
 			get_random_bytes(buffer, junk_packet_size);
 			get_random_bytes(&ds, 1);
-			wg_socket_send_buffer_to_peer(peer, buffer, junk_packet_size, ds, 0);
+			wg_socket_send_buffer_to_peer(peer, buffer, junk_packet_size, ds, 0, false);
 		}
 
 		kfree(buffer);
@@ -86,7 +86,7 @@ static void wg_packet_send_handshake_initiation(struct wg_peer *peer)
 		atomic64_set(&peer->last_sent_handshake,
 			     ktime_get_coarse_boottime_ns());
 		wg_socket_send_buffer_to_peer(peer, &packet, sizeof(packet),
-					      HANDSHAKE_DSCP, wg->init_padding);
+					      HANDSHAKE_DSCP, wg->init_padding, true);
 		wg_timers_handshake_initiated(peer);
 	}
 }
@@ -158,7 +158,7 @@ void wg_packet_send_handshake_response(struct wg_peer *peer)
 			wg_socket_send_buffer_to_peer(peer, &packet,
 						      sizeof(packet),
 						      HANDSHAKE_DSCP,
-							  wg->resp_padding);
+							  wg->resp_padding, true);
 		}
 	}
 }

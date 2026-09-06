@@ -187,14 +187,16 @@ int wg_socket_send_skb_to_peer(struct wg_peer *peer, struct sk_buff *skb, u8 ds)
 }
 
 int wg_socket_send_buffer_to_peer(struct wg_peer *peer, void *buffer,
-				  size_t len, u8 ds, size_t padding)
+				  size_t len, u8 ds, size_t padding, bool trailer)
 {
 	struct sk_buff *skb;
 	void *crypto = NULL;
 	size_t trailer_len;
 	struct chacha_state state;
 
-	trailer_len = wg_peer_skb_random_trailer(peer, peer->device, padding + len);
+	trailer_len = trailer
+		? wg_peer_skb_random_trailer(peer, peer->device, padding + len)
+		: 0;
 
 	skb = alloc_skb(len + padding + trailer_len + SKB_HEADER_LEN, GFP_ATOMIC);
 	if (unlikely(!skb))
