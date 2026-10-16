@@ -478,20 +478,19 @@ ipset_load()
     local list="$3"
 
     [ -n "$name" ] || return
-    ipset -q -N $name nethash \
-        && log "ipset '$name' created successfully"
+    ipset -q create $name nethash
     ipset flush $name
 
     if [ "$mode" = "list" ]; then
         [ -s "$list" ] || return
         filter_ipv4 < $list \
             | sed -E 's#^(.*)$#add '"$name"' \1#' \
-            | ipset restore
+            | ipset -q restore
     else
         [ -n "$list" ] || return
         printf '%s\n' "$list" | filter_ipv4 \
             | sed -E 's#^(.*)$#add '"$name"' \1#' \
-            | ipset restore
+            | ipset -q restore
     fi
 
     [ $? -eq 0 ] || log "ipset '$name' failed to update"
@@ -509,8 +508,7 @@ ipset_create()
 
     local name
     for name in $NV_IPSET_LIST; do
-        ipset -q -N $name nethash \
-            && log "ipset '$name' created successfully"
+        ipset -q create $name nethash
     done
 
     for name in $(bogon_networks); do
