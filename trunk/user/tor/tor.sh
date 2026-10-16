@@ -24,7 +24,6 @@ NV_TOR_PROXY_MODE="$(nvram get tor_proxy_mode)"
 TOR_IPSET_CLIENTS="tor.clients"
 TOR_IPSET_REMOTE="tor.remote"
 TOR_IPSET_EXCLUDE="tor.exclude"
-DNSMASQ_IPSET="tor"
 
 # get comma separated lists for nvram
 NV_IPSET_LIST="$(nvram get tor_ipset_allowed | tr -s ' ,' '\n')"
@@ -216,9 +215,6 @@ fill_ipset()
 
 create_ipset()
 {
-    ipset -q -N $DNSMASQ_IPSET nethash timeout 21600 \
-        && log "ipset '$DNSMASQ_IPSET' with timeout 21600 created successfully"
-
     fill_ipset "nv" "$TOR_IPSET_CLIENTS" "$NV_TOR_CLIENTS"
     fill_ipset "nv" "$TOR_IPSET_EXCLUDE" "$NV_TOR_EXCLUDE"
     fill_ipset "list" "$TOR_IPSET_REMOTE" "$TOR_REMOTE_LIST"
