@@ -1384,7 +1384,9 @@ handle_notifications(void)
 #if defined (SUPPORT_IPSET)
 		else if (strcmp(entry->d_name, RCN_FLUSH_IPSET_DHCPD) == 0)
 		{
-			doSystem("/usr/bin/ipset-flush-dnsmasq.sh");
+			doSystem("sed -n 's#^[[:space:]]*ipset=/.*/##p' /etc/storage/dnsmasq/dnsmasq.ipset"
+				 "| tr ',' '\n' | sort -u"
+				 "| xargs -r -I '{}' ipset -q flush '{}'");
 		}
 #endif
 		else if (strcmp(entry->d_name, RCN_RESTART_DNS) == 0)
