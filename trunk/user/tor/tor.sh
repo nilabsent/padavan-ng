@@ -202,12 +202,12 @@ fill_ipset()
         [ -s "$list" ] || return
         filter_ipv4 < $list \
             | sed -E 's#^(.*)$#add '"$name"' \1#' \
-            | ipset restore -!
+            | ipset -q restore
     else
         [ -n "$list" ] || return
         printf '%s\n' "$list" | filter_ipv4 \
             | sed -E 's#^(.*)$#add '"$name"' \1#' \
-            | ipset restore -!
+            | ipset -q restore
     fi
 
     [ $? -eq 0 ] || log "ipset '$name' failed to update"
@@ -218,12 +218,11 @@ create_ipset()
     fill_ipset "nv" "$TOR_IPSET_CLIENTS" "$NV_TOR_CLIENTS"
     fill_ipset "nv" "$TOR_IPSET_EXCLUDE" "$NV_TOR_EXCLUDE"
     fill_ipset "list" "$TOR_IPSET_REMOTE" "$TOR_REMOTE_LIST"
-    ipset -! add "$TOR_IPSET_REMOTE" "$TOR_NETWORK_IPV4"
+    ipset -q add "$TOR_IPSET_REMOTE" "$TOR_NETWORK_IPV4"
 
     local name
     for name in $NV_IPSET_LIST; do
-        ipset -q create $name nethash \
-            && log "ipset '$name' created successfully"
+        ipset -q create $name nethash
     done
 }
 
