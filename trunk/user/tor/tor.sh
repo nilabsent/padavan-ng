@@ -12,27 +12,41 @@ GEOIP_DIR="/usr/share/tor"
 CONFIG_DIR="/etc/storage/tor"
 CONFIG_FILE="$CONFIG_DIR/torrc"
 TOR_REMOTE_LIST="$CONFIG_DIR/remote_network.list"
-TOR_NETWORK_IPV4="172.16.0.0/12"
+TOR_NETWORK_IPV4="172.24.0.0/13"
+TOR_PORTS="80,443"
 CONTROL_PORT=9051
 DNS_PORT=9053
 TRANS_PORT=9040
 
-NV_TOR_ENABLED="$(nvram get tor_enable)"
-
 # 0 - disabled, 1 - redirect allowed remote, 2 - redirect all
 NV_TOR_PROXY_MODE="$(nvram get tor_proxy_mode)"
 
-# get comma separated lists for nvram
-NV_TOR_CLIENTS="$(nvram get tor_clients_allowed | tr -s ' ,' '\n')"
-NV_IPSET_LIST="$(nvram get tor_ipset_allowed | tr -s ' ,' '\n')"
-
 TOR_IPSET_CLIENTS="tor.clients"
 TOR_IPSET_REMOTE="tor.remote"
-
+TOR_IPSET_EXCLUDE="tor.exclude"
 DNSMASQ_IPSET="tor"
 
-LAN_IP=$(nvram get lan_ipaddr)
-[ "$LAN_IP" ] || LAN_IP="192.168.1.1"
+# get comma separated lists for nvram
+NV_IPSET_LIST="$(nvram get tor_ipset_allowed | tr -s ' ,' '\n')"
+NV_TOR_CLIENTS="$(nvram get tor_clients_allowed | tr -s ' ,' '\n')"
+
+NV_TOR_EXCLUDE="
+0.0.0.0/8
+127.0.0.0/8
+169.254.0.0/16
+224.0.0.0/4
+240.0.0.0/4
+100.64.0.0/10
+10.0.0.0/8
+192.168.0.0/16
+172.16.0.0/13
+198.18.0.0/15
+192.88.99.0/24
+192.0.0.0/24
+192.0.2.0/24
+198.51.100.0/24
+203.0.113.0/24
+"
 
 unset IPSET
 [ -x /sbin/ipset ] && IPSET=1
@@ -40,7 +54,7 @@ unset IPSET
 log()
 {
     [ -n "$*" ] || return
-    echo "$@"
+    echo "$@" >&2
 
     local pid
     [ -f "$PID_FILE" ] && pid="[$(cat "$PID_FILE" 2>/dev/null)]"
@@ -63,60 +77,6 @@ is_started()
 {
     [ -z "$(pidof $(basename "$TOR_BIN"))" ] && return 1
     [ -f "$PID_FILE" ]
-}
-
-func_create_config()
-{
-    [ ! -d "$CONFIG_DIR" ] && mkdir -p $CONFIG_DIR
-    chmod 755 "$CONFIG_FILE"
-
-    [ -s "$CONFIG_FILE" ] && return
-
-    cat > "$CONFIG_FILE" <<EOF
-### https://www.torproject.org/docs/tor-manual.html
-### reserved: network $TOR_NETWORK_IPV4, ports 80,443/TCP
-
-# ExcludeExitNodes {RU}, {UA}, {BY}, {KZ}, {MD}, {AZ}, {AM}, {GE}, {LY}, {LT}, {TM}, {UZ}, {EE}
-# StrictNodes 1
-
-SocksPort ${LAN_IP}:9050
-HTTPTunnelPort ${LAN_IP}:8181
-
-# custom Padavan firmware option: prevent microdescs saved in Datadirectory
-NotSaveMicrodescs 1
-
-# TrackHostExits .
-DormantTimeoutEnabled 0
-NumEntryGuards 8
-NewCircuitPeriod 30
-LongLivedPorts 80,443
-DormantCanceledByStartup 1
-MaxCircuitDirtiness 120
-KeepalivePeriod 60
-HiddenServiceStatistics 0
-ClientOnly 1
-ExitRelay 0
-ExitPolicy reject *:*
-ExitPolicy reject6 *:*
-AutomapHostsOnResolve 1
-Log notice syslog
-AvoidDiskWrites 1
-UseBridges 1
-
-### https://bridges.torproject.org/bridges?transport=vanilla
-### https://github.com/ValdikSS/tor-relay-scanner
-
-Bridge [2001:67c:289c:2::39]:81 55277EB96F22D4DD6A8048D7945078E0C5BECA3D
-Bridge [2a03:e600:100::11]:9003 EFF9450F68918776F870BBC554F8E3A7D6E1C953
-Bridge [2a0b:f4c2::]:9003 8C582D20C1362A37CB8B8321A5D745578FE01977
-Bridge [2a0b:f4c2:1::137]:10137 C028378B070FC72B2AB9E5C93F6E292D841B9EAC
-Bridge [2a04:52c0:115:fed3::1]:9001 F732303DAE01A4EF9AF28127425950B494C59927
-Bridge [2a0b:4142:218::2]:9001 0858C3E9183DC93C3E31026220BA6BA92273E7C4
-Bridge [2602:f9f3:0:2::2f5]:9001 0D13B5883BD6B942775CF5841257C8F1B5042F1F
-Bridge [2001:41d0:403:585a::]:9005 F93DC96A3010079BDCE904856036588C17304BBF
-Bridge [2a00:1b88:4::2]:443 A319D6447B2B4107477E126EE4A2B7C38125149E
-EOF
-    chmod 644 "$CONFIG_FILE"
 }
 
 tor_control()
@@ -167,7 +127,7 @@ start_tor()
 {
     is_started && die "already started"
 
-    [ ! -f "$CONFIG_FILE" ] && func_create_config
+    [ -s "$CONFIG_FILE" ] || error "not found configuration file $CONFIG_FILE"
 
     if [ -d "/opt/share/tor" ]
     then
@@ -178,12 +138,11 @@ start_tor()
     rm -rf ${OPT}${DATA_DIR}
     rm -rf $DATA_DIR
 
-    # 0.0.0.0 for TransPort, because REDIRECT between interfaces does not work
     $TOR_BIN --RunAsDaemon 1 \
         --DataDirectory ${OPT}${DATA_DIR} \
         --ControlPort $CONTROL_PORT \
         --CookieAuthentication 0 \
-        --DNSPort $DNS_PORT \
+        --DNSPort 0.0.0.0:$DNS_PORT \
         --VirtualAddrNetworkIPv4 $TOR_NETWORK_IPV4 \
         --TransPort 0.0.0.0:$TRANS_PORT \
         --PidFile $PID_FILE
@@ -237,20 +196,19 @@ fill_ipset()
     local list="$3"
 
     [ -n "$name" ] || return
-    ipset -q -N $name nethash \
-        && log "ipset '$name' created successfully"
+    ipset -q create $name nethash
     ipset -q flush $name
 
     if [ "$mode" = "list" ]; then
         [ -s "$list" ] || return
         filter_ipv4 < $list \
             | sed -E 's#^(.*)$#add '"$name"' \1#' \
-            | ipset restore
+            | ipset restore -!
     else
         [ -n "$list" ] || return
         printf '%s\n' "$list" | filter_ipv4 \
             | sed -E 's#^(.*)$#add '"$name"' \1#' \
-            | ipset restore
+            | ipset restore -!
     fi
 
     [ $? -eq 0 ] || log "ipset '$name' failed to update"
@@ -258,72 +216,47 @@ fill_ipset()
 
 create_ipset()
 {
-    [ -z "$IPSET" ] && return
-
     ipset -q -N $DNSMASQ_IPSET nethash timeout 21600 \
         && log "ipset '$DNSMASQ_IPSET' with timeout 21600 created successfully"
 
     fill_ipset "nv" "$TOR_IPSET_CLIENTS" "$NV_TOR_CLIENTS"
+    fill_ipset "nv" "$TOR_IPSET_EXCLUDE" "$NV_TOR_EXCLUDE"
     fill_ipset "list" "$TOR_IPSET_REMOTE" "$TOR_REMOTE_LIST"
+    ipset -! add "$TOR_IPSET_REMOTE" "$TOR_NETWORK_IPV4"
 
     local name
     for name in $NV_IPSET_LIST; do
-        ipset -q -N $name nethash \
+        ipset -q create $name nethash \
             && log "ipset '$name' created successfully"
     done
 }
 
 stop_redirect()
 {
-    ipt_remove_rule(){ while iptables -t $1 -C $2 2>/dev/null; do iptables -t $1 -D $2; done }
-    ipt_remove_chain(){ iptables -t $1 -F $2 2>/dev/null && iptables -t $1 -X $2 2>/dev/null; }
+    [ -n "$IPSET" ] || return
 
-    ipt_remove_rule "raw" "PREROUTING -p tcp -m multiport --dports 80,443 -j tor_proxy"
-    ipt_remove_rule "nat" "PREROUTING -p tcp -m mark --mark $TRANS_PORT -j REDIRECT --to-port $TRANS_PORT"
-
-    ipt_remove_chain "raw" "tor_proxy"
-    ipt_remove_chain "raw" "tor_remote"
-    ipt_remove_chain "raw" "tor_mark"
+    iptables-restore -n <<EOF
+*nat
+$(iptables-save -t nat | sed -n '/PREROUTING .* -j tor_proxy\b/s/^-A/-D/p')
+-F tor_proxy
+-X tor_proxy
+COMMIT
+EOF
 }
 
 make_rules()
 {
     local i
 
-    if [ -n "$NV_TOR_CLIENTS" ]; then
-        if [ -n "$IPSET" ]; then
-            echo "-A tor_proxy -m set --match-set $TOR_IPSET_CLIENTS src -j tor_remote"
-        else
-            for i in $NV_TOR_CLIENTS; do
-                echo "-A tor_proxy -s $i -j tor_remote"
-            done
-        fi
-    else
-        echo "-A tor_proxy -j tor_remote"
-    fi
-
-    for i in \
-        0.0.0.0/8 127.0.0.0/8 169.254.0.0/16 \
-        224.0.0.0/4 240.0.0.0/4 100.64.0.0/10 \
-        10.0.0.0/8 192.168.0.0/16 \
-        198.18.0.0/15 192.88.99.0/24 192.0.0.0/24 \
-        192.0.2.0/24 198.51.100.0/24 203.0.113.0/24
-    do
-        echo "-A tor_remote -d $i -j RETURN"
-    done
+    [ -n "$NV_TOR_CLIENTS" ] \
+        && echo "-A tor_proxy -m set ! --match-set $TOR_IPSET_CLIENTS src -j RETURN"
 
     if [ "$NV_TOR_PROXY_MODE" = "1" ]; then
-        if [ -n "$IPSET" ]; then
-            for i in $TOR_IPSET_REMOTE $NV_IPSET_LIST; do
-                echo "-A tor_remote -m set --match-set $i dst -j tor_mark"
-            done
-        else
-            for i in $(filter_ipv4 < "$TOR_REMOTE_LIST"); do
-                echo "-A tor_remote -d $i -j tor_mark"
-            done
-        fi
+        for i in $TOR_IPSET_REMOTE $NV_IPSET_LIST; do
+            echo "-A tor_proxy -p tcp -m set --match-set $i dst -j REDIRECT --to-ports $TRANS_PORT"
+        done
     else
-        echo "-A tor_remote -j tor_mark"
+        echo "-A tor_proxy -p tcp -j REDIRECT --to-ports $TRANS_PORT"
     fi
 }
 
@@ -334,27 +267,19 @@ start_redirect()
     is_started || return 1
     [ "$NV_TOR_PROXY_MODE" = "0" -o -z "$NV_TOR_PROXY_MODE" ] && return
     [ -f "$PID_WAIT_SYNC_FILE" ] && return
+    [ -n "$IPSET" ] || return
 
     create_ipset
 
-    # using the raw table due to a very old kernel
     iptables-restore -n <<EOF
 *nat
--A PREROUTING -p tcp -m mark --mark $TRANS_PORT -j REDIRECT --to-ports $TRANS_PORT
-COMMIT
-*raw
 :tor_proxy - [0:0]
-:tor_remote - [0:0]
-:tor_mark - [0:0]
--A PREROUTING -p tcp -m multiport --dports 80,443 -j tor_proxy
+-A PREROUTING -p tcp -m multiport --dports $TOR_PORTS -m set ! --match-set $TOR_IPSET_EXCLUDE dst -j tor_proxy
 $(make_rules)
--A tor_remote -d $TOR_NETWORK_IPV4 -j tor_mark
--A tor_mark -j MARK --set-mark $TRANS_PORT
 COMMIT
 EOF
     [ $? -eq 0 ] || error "firewall rules update failed"
 }
-
 
 case "$1" in
     start)
@@ -386,12 +311,8 @@ case "$1" in
         tor_control "$2"
     ;;
 
-    config|create-config)
-        [ ! -f "$CONFIG_FILE" ] && func_create_config
-    ;;
-
     *)
-        echo "Usage: $0 {start|stop|restart|reload|update|status|create-config|control <command>}"
+        echo "Usage: $0 {start|stop|restart|reload|update|status|control <command>}"
         exit 1
     ;;
 esac

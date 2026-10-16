@@ -453,6 +453,10 @@ if [ "$CONFIG_FIRMWARE_INCLUDE_XFRM" != "y" ] ; then
 	func_disable_kernel_param "CONFIG_CRYPTO_DEFLATE"
 fi
 #fi
+############################ TOR ######################################
+if [ "$CONFIG_FIRMWARE_INCLUDE_TOR" != "y" ] ; then
+	CONFIG_FIRMWARE_INCLUDE_IPSET=y
+fi
 ############################ IPSET ####################################
 if [ "$CONFIG_FIRMWARE_INCLUDE_IPSET" != "y" ] ; then
 	func_disable_kernel_param "CONFIG_NETFILTER_NETLINK"
