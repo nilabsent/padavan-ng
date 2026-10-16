@@ -41,8 +41,6 @@ FWMARK=51820
 PREF_WG=5182
 PREF_MAIN=5181
 
-DNSMASQ_IPSET="unblock"
-
 # nethash remote networks
 VPN_REMOTE_IPSET="vpn.remote"
 # nethash excluded remote networks
@@ -504,9 +502,6 @@ ipset_create()
     # create ipset ipv4 entrys
 
     [ -n "$IPSET" ] || return
-
-    ipset -q -N $DNSMASQ_IPSET nethash timeout 21600 \
-        && log "ipset '$DNSMASQ_IPSET' with timeout 21600 created successfully"
 
     ipset_load "list" "$VPN_REMOTE_IPSET" "$REMOTE_NETWORK_LIST"
     ipset_load "list" "$VPN_EXCLUDE_IPSET" "$EXCLUDE_NETWORK_LIST"
