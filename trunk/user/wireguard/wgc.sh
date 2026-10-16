@@ -485,12 +485,12 @@ ipset_load()
         [ -s "$list" ] || return
         filter_ipv4 < $list \
             | sed -E 's#^(.*)$#add '"$name"' \1#' \
-            | ipset -q restore
+            | ipset -! restore
     else
         [ -n "$list" ] || return
         printf '%s\n' "$list" | filter_ipv4 \
             | sed -E 's#^(.*)$#add '"$name"' \1#' \
-            | ipset -q restore
+            | ipset -! restore
     fi
 
     [ $? -eq 0 ] || log "ipset '$name' failed to update"

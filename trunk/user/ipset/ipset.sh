@@ -67,7 +67,7 @@ restore()
 
     filter_ipv4 < "$list" \
         | sed -E 's#^(.*)$#add '"$name"' \1#' \
-        | $BIN restore -!
+        | $BIN -! restore
 
     if [ $? -eq 0 ]; then
         local num=", $($BIN list $name | grep -i 'Number of entries' | tr '[:upper:]' '[:lower:]')"
