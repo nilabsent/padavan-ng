@@ -633,6 +633,12 @@ start_dns_dhcpd(int is_ap_mode)
 	fprintf(fp, "conf-file=%s/dnsmasq.conf\n", storage_dir);
 #if defined (SUPPORT_IPSET)
 	fprintf(fp, "conf-file=%s/dnsmasq.ipset\n", storage_dir);
+
+	// create dnsmasq ipsets, timeout 6h
+	doSystem("sed -n 's#^[[:space:]]*ipset=/.*/##p' %s/dnsmasq.ipset"
+		 "| tr ',' '\n' | sort -u"
+		 "| xargs -r -I '{}' ipset -q create '{}' nethash timeout 21600",
+		 storage_dir);
 #endif
 	fclose(fp);
 
