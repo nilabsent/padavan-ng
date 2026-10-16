@@ -182,6 +182,19 @@ func_reset()
 	mkdir -p -m 755 $dir_storage
 }
 
+cp_default()
+{
+	# $1 - storage file path
+	# #2 - chmod
+
+	local dst="$1"
+
+	if [ ! -f "$dst" ] ; then
+		cp -f "/usr/share/${dst#/etc}" "$dst"
+		chmod $2 "$dst"
+	fi
+}
+
 func_fill()
 {
 	dir_httpssl="$dir_storage/https"
@@ -193,34 +206,8 @@ func_fill()
 	dir_inadyn="$dir_storage/inadyn"
 	dir_crond="$dir_storage/cron/crontabs"
 	dir_wlan="$dir_storage/wlan"
-
-	script_start="$dir_storage/start_script.sh"
-	script_started="$dir_storage/started_script.sh"
-	script_shutd="$dir_storage/shutdown_script.sh"
-	script_postf="$dir_storage/post_iptables_script.sh"
-	script_postw="$dir_storage/post_wan_script.sh"
-	script_inets="$dir_storage/inet_state_script.sh"
-	script_vpnsc="$dir_storage/vpns_client_script.sh"
-	script_vpncs="$dir_storage/vpnc_server_script.sh"
-	script_ezbtn="$dir_storage/ez_buttons_script.sh"
-	script_wpad="$dir_storage/wpad.dat"
-	script_zapret="/usr/bin/zapret.sh"
-	script_tor="/usr/bin/tor.sh"
-	script_vpnc_post="$dir_storage/vpnc_post_script.sh"
-
-	list_vpncr="$dir_storage/vpnc_remote_network.list"
-	list_vpnce="$dir_storage/vpnc_exclude_network.list"
-
-	user_hosts="$dir_dnsmasq/hosts"
-	user_dnsmasq_conf="$dir_dnsmasq/dnsmasq.conf"
-	user_dnsmasq_ipset="$dir_dnsmasq/dnsmasq.ipset"
-	user_dnsmasq_serv="$dir_dnsmasq/dnsmasq.servers"
-	user_ovpnsvr_conf="$dir_ovpnsvr/server.conf"
-	user_ovpncli_conf="$dir_ovpncli/client.conf"
-	user_inadyn_conf="$dir_inadyn/inadyn.conf"
-	user_sswan_conf="$dir_sswan/strongswan.conf"
-	user_sswan_ipsec_conf="$dir_sswan/ipsec.conf"
-	user_sswan_secrets="$dir_sswan/ipsec.secrets"
+	dir_ipset="$dir_storage/ipset"
+	dir_tor="$dir_storage/tor"
 
 	# create crond dir
 	[ ! -d "$dir_crond" ] && mkdir -p -m 730 "$dir_crond"
@@ -229,545 +216,92 @@ func_fill()
 	[ ! -d "$dir_httpssl" ] && mkdir -p -m 700 "$dir_httpssl"
 
 	# create start script
-	if [ ! -f "$script_start" ] ; then
+	if [ ! -f "$dir_storage/start_script.sh" ] ; then
 		reset_ss.sh -a
 	fi
 
 	# create started script
-	if [ ! -f "$script_started" ] ; then
-		cat > "$script_started" <<EOF
-#!/bin/sh
-
-### Custom user script
-### Called after router started and network is ready
-
-EOF
-		chmod 755 "$script_started"
-	fi
+	cp_default "$dir_storage/started_script.sh" 755
 
 	# create shutdown script
-	if [ ! -f "$script_shutd" ] ; then
-		cat > "$script_shutd" <<EOF
-#!/bin/sh
-
-### Custom user script
-### Called before router shutdown
-### \$1 - action (0: reboot, 1: halt, 2: power-off)
-
-EOF
-		chmod 755 "$script_shutd"
-	fi
+	cp_default "$dir_storage/shutdown_script.sh" 755
 
 	# create post-iptables script
-	if [ ! -f "$script_postf" ] ; then
-		cat > "$script_postf" <<EOF
-#!/bin/sh
-
-### Custom user script
-### Called after internal iptables reconfig (firewall update)
-
-EOF
-		chmod 755 "$script_postf"
-	fi
+	cp_default "$dir_storage/post_iptables_script.sh" 755
 
 	# create post-wan script
-	if [ ! -f "$script_postw" ] ; then
-		cat > "$script_postw" <<EOF
-#!/bin/sh
-
-### Custom user script
-### Called after internal WAN up/down action
-### \$1 - WAN action (up/down)
-### \$2 - WAN interface name (e.g. eth3 or ppp0)
-### \$3 - WAN IPv4 address
-
-EOF
-		chmod 755 "$script_postw"
-	fi
+	cp_default "$dir_storage/post_wan_script.sh" 755
 
 	# create inet-state script
-	if [ ! -f "$script_inets" ] ; then
-		cat > "$script_inets" <<EOF
-#!/bin/sh
-
-### Custom user script
-### Called on Internet status changed
-### \$1 - Internet status (0/1)
-### \$2 - elapsed time (s) from previous state
-
-logger -t "di" "Internet state: \$1, elapsed time: \$2s."
-
-EOF
-		chmod 755 "$script_inets"
-	fi
+	cp_default "$dir_storage/inet_state_script.sh" 755
 
 	# create vpn server action script
-	if [ ! -f "$script_vpnsc" ] ; then
-		cat > "$script_vpnsc" <<EOF
-#!/bin/sh
-
-### Custom user script
-### Called after remote peer connected/disconnected to internal VPN server
-### \$1 - peer action (up/down)
-### \$2 - peer interface name (e.g. ppp10)
-### \$3 - peer local IP address
-### \$4 - peer remote IP address
-### \$5 - peer name
-
-peer_if="\$2"
-peer_ip="\$4"
-peer_name="\$5"
-
-### example: add static route to private LAN subnet behind a remote peer
-
-func_ipup()
-{
-#  if [ "\$peer_name" == "dmitry" ] ; then
-#    route add -net 192.168.5.0 netmask 255.255.255.0 dev \$peer_if
-#  elif [ "\$peer_name" == "victoria" ] ; then
-#    route add -net 192.168.8.0 netmask 255.255.255.0 dev \$peer_if
-#  fi
-   return 0
-}
-
-func_ipdown()
-{
-#  if [ "\$peer_name" == "dmitry" ] ; then
-#    route del -net 192.168.5.0 netmask 255.255.255.0 dev \$peer_if
-#  elif [ "\$peer_name" == "victoria" ] ; then
-#    route del -net 192.168.8.0 netmask 255.255.255.0 dev \$peer_if
-#  fi
-   return 0
-}
-
-case "\$1" in
-up)
-  func_ipup
-  ;;
-down)
-  func_ipdown
-  ;;
-esac
-
-EOF
-		chmod 755 "$script_vpnsc"
-	fi
+	cp_default "$dir_storage/vpns_client_script.sh" 755
 
 	# create vpn client action script
-	if [ ! -f "$script_vpncs" ] ; then
-		cat > "$script_vpncs" <<EOF
-#!/bin/sh
-
-### Custom user script
-### Called after internal VPN client connected/disconnected to remote VPN server
-### \$1        - action (up/down)
-### \$IFNAME   - tunnel interface name (e.g. ppp5 or tun0)
-### \$IPLOCAL  - tunnel local IP address
-### \$IPREMOTE - tunnel remote IP address
-### \$DNS1     - peer DNS1
-### \$DNS2     - peer DNS2
-
-# private LAN subnet behind a remote server (example)
-peer_lan="192.168.9.0"
-peer_msk="255.255.255.0"
-
-### example: add static route to private LAN subnet behind a remote server
-
-func_ipup()
-{
-#  route add -net \$peer_lan netmask \$peer_msk gw \$IPREMOTE dev \$IFNAME
-   return 0
-}
-
-func_ipdown()
-{
-#  route del -net \$peer_lan netmask \$peer_msk gw \$IPREMOTE dev \$IFNAME
-   return 0
-}
-
-logger -t vpnc-script "\$IFNAME \$1"
-
-case "\$1" in
-up)
-  func_ipup
-  ;;
-down)
-  func_ipdown
-  ;;
-esac
-
-EOF
-		chmod 755 "$script_vpncs"
-	fi
+	cp_default "$dir_storage/vpnc_server_script.sh" 755
 
 	# wireguard storage files
 	if [ -s /lib/modules/3.4.113/kernel/net/wireguard/wireguard.ko ] \
 	   || [ -s /lib/modules/3.4.113/kernel//net/amneziawg/amneziawg.ko ] ; then
 		# create wireguard client post script
-		if [ ! -f "$script_vpnc_post" ] ; then
-			cat > "$script_vpnc_post" <<'EOF'
-#!/bin/sh
-### Custom user script
-### Called after starting Wireguard VPN client
-### $1         - action: start/stop/restart/reload/update
-### $IF_NAME   - interface name
-### $TABLE     - table contains default route to $IF_NAME
-### $PREF_WG   - number of rules for $TABLE, marked $FWMARK
-###              clears up when stopping/restarting
-### $PREF_MAIN - number of rules before the $TABLE, route to main
-###              clears up when stopping/restarting
-
-post_start()
-{
-  # ip rule add to 8.8.8.8 table main pref $PREF_MAIN
-  # ip rule add to 8.8.8.8 table $TABLE pref $PREF_WG
-  # ip route replace 192.168.9.0/24 dev $IF_NAME
-  return 0
-}
-
-post_stop()
-{
-  return 0
-}
-
-post_reload()
-{
-  # when update ipset, fw
-  return 0
-}
-
-post_update()
-{
-  # when update fw
-  return 0
-}
-
-post_watchdog()
-{
-  # when watchdog launched
-  return 0
-}
-
-case "$1" in
-  start)
-    post_start
-  ;;
-
-  stop)
-    post_stop
-  ;;
-
-  reload)
-    post_reload
-  ;;
-
-  update)
-    post_update
-  ;;
-
-  watchdog)
-    post_watchdog
-  ;;
-esac
-EOF
-			chmod 755 "$script_vpnc_post"
-		fi
+		cp_default "$dir_storage/vpnc_post_script.sh" 755
 
 		# create wireguard remote ip list
-		if [ ! -f "$list_vpncr" ] ; then
-			cat > "$list_vpncr" <<EOF
-### List of IP addresses and networks accessible through the VPN
-
-# telegram
-91.105.192.0/23
-91.108.4.0/22
-91.108.8.0/21
-91.108.16.0/21
-91.108.56.0/22
-95.161.64.0/20
-149.154.160.0/20
-185.76.151.0/24
-EOF
-			chmod 644 "$list_vpncr"
-		fi
+		cp_default "$dir_storage/vpnc_remote_network.list" 644
 
 		# create wireguard exclusion list of remote ip
-		if [ ! -f "$list_vpnce" ] ; then
-			cat > "$list_vpnce" <<EOF
-### List of IP addresses and networks excluded from VPN routing
-EOF
-			chmod 644 "$list_vpnce"
-		fi
+		cp_default "$dir_storage/vpnc_exclude_network.list" 644
 	fi
 
 	# create Ez-Buttons script
-	if [ ! -f "$script_ezbtn" ] ; then
-		cat > "$script_ezbtn" <<EOF
-#!/bin/sh
-
-### Custom user script
-### Called on WPS or FN button pressed
-### \$1 - button param
-
-[ -x /opt/bin/on_wps.sh ] && /opt/bin/on_wps.sh \$1 &
-
-EOF
-		chmod 755 "$script_ezbtn"
-	fi
+	cp_default "$dir_storage/ez_buttons_script.sh" 755
 
 	# create wpad.dat script
 	if [ -L "/www/wpad.dat" ] ; then
-		if [ ! -f "$script_wpad" ] ; then
-			cat > "$script_wpad" <<EOF
-/*
-   Web Proxy Automatic Discovery (WPAD) example script
-*/
-
-function FindProxyForURL(url, host)
-{
-  if (dnsDomainIs(host, "onion")) return "SOCKS 192.168.1.1:9050";
-  return "DIRECT";
-}
-EOF
-		chmod 644 "$script_wpad"
-		fi
+		cp_default "$dir_storage/wpad.dat" 644
 	fi
 
 	# create user dnsmasq.conf
 	[ ! -d "$dir_dnsmasq" ] && mkdir -p -m 755 "$dir_dnsmasq"
-	for i in dnsmasq.conf hosts ; do
-		[ -f "$dir_storage/$i" ] && mv -n "$dir_storage/$i" "$dir_dnsmasq"
-	done
-	if [ ! -f "$user_dnsmasq_conf" ] ; then
-		cat > "$user_dnsmasq_conf" <<EOF
-# Custom user conf file for dnsmasq
-# Please add needed params only!
-
-### Web Proxy Automatic Discovery (WPAD)
-dhcp-option=252,"\n"
-
-### Set the limit on DHCP leases, the default is 150
-#dhcp-lease-max=150
-
-### Add local-only domains, queries are answered from hosts or DHCP only
-#local=/router/localdomain/
-
-### Examples:
-
-### Enable built-in TFTP server
-#enable-tftp
-
-### Set the root directory for files available via TFTP.
-#tftp-root=/opt/srv/tftp
-
-### Make the TFTP server more secure
-#tftp-secure
-
-### Set the boot filename for netboot/PXE
-#dhcp-boot=pxelinux.0
-
-EOF
-		chmod 644 "$user_dnsmasq_conf"
-	fi
+	cp_default "$dir_dnsmasq/dnsmasq.conf" 644
 
 	# create user dns servers
-	if [ ! -f "$user_dnsmasq_serv" ] ; then
-		cat > "$user_dnsmasq_serv" <<EOF
-# Custom user servers file for dnsmasq
-# Example:
-#server=/mit.ru/izmuroma.ru/10.25.11.30
-EOF
-		chmod 644 "$user_dnsmasq_serv"
-	fi
+	cp_default "$dir_dnsmasq/dnsmasq.servers" 644
+
+	# create user hosts
+	cp_default "$dir_dnsmasq/hosts" 644
 
 	# create user ipsets
 	if [ -x /sbin/ipset ] ; then
-		if [ ! -f "$user_dnsmasq_ipset" ] ; then
-			cat > "$user_dnsmasq_ipset" <<EOF
-### Custom user ipsets for dnsmasq
-### Changing the list flushes all affected ipsets
+		cp_default "$dir_dnsmasq/dnsmasq.ipset" 644
 
-### for testing
-# ipset=/myip.ru/unblock
-
-ipset=/nessus.org/unblock
-ipset=/tenable.com/unblock
-ipset=/broadcom.com/unblock
-ipset=/matt.ucc.asn.au/unblock
-ipset=/ccadb.my.salesforce-sites.com/unblock
-ipset=/dnscheck.tools/unblock
-ipset=/dnsleaktest.com/unblock
-ipset=/xda-developers.com/unblock
-ipset=/xdaforums.com/unblock
-ipset=/vmware.com/unblock
-ipset=/kinozaltv.life/unblock
-ipset=/warpgen.net/unblock
-ipset=/rutor.is/unblock
-ipset=/rutracker.org/unblock
-
-### youtube
-# ipset=/:.*youtube.*:/youtu.be/ggpht.com/ytimg.com/unblock
-# ipset=/yt3.googleusercontent.com/ytimg.l.google.com/unblock
-# ipset=/ytstatic.l.google.com/yt-video-upload.l.google.com/unblock
-
-### twitch
-# ipset=/twitch.tv/twitchcdn.net/jtvnw.net/ttvnw.net/unblock
-# ipset=/ext-twitch.tv/live-video.net/unblock
-
-### discord
-ipset=/:.*discord.*:/dis.gd/unblock
-
-### tiktok
-# ipset=/:.*tiktok.*:/byteoversea.com/ibytedtos.com/unblock
-# ipset=/muscdn.com/musical.ly/tik-tokapi.com/ttwstatic.com/unblock
-
-### chatgpt
-ipset=/chatgpt.com/cdn.oaistatic.com/oaiusercontent.com/openai.com/unblock
-
-### spotify
-ipset=/:.*spotify.*:/scdn.co/pscdn.co/spoti.fi/unblock
-
-### linkedin
-ipset=/linkedin.com/licdn.com/unblock
-
-### meta, facebook, instagram, whatsapp
-ipset=/instagram.com/ig.me/cdninstagram.com/unblock
-ipset=/fb.com/facebook.com/facebook.net/fbcdn.net/fbsbx.com/internalfb.com/unblock
-ipset=/oculus.com/oculuscdn.com/threads.net/threads.com/unblock
-ipset=/:.*whatsapp.*:/wa.me/unblock
-
-### twitter, x.com
-ipset=/:.*twitter.*:/periscope.tv/pscp.tv/t.co/x.com/unblock
-ipset=/twimg.com/twitpic.com/twtrdns.net/twttr.com/twttr.net/twvid.com/unblock
-ipset=/tellapart.com/tweetdeck.com/vine.co/cms-twdigitalassets.com/unblock
-
-### telegram
-ipset=/:.*telegram.*:/telega.one/telegra.ph/telesco.pe/unblock
-ipset=/t.me/tdesktop.com/tg.dev/tx.me/ton.org/unblock
-ipset=/comments.app/contest.com/fragment.com/unblock
-ipset=/graph.org/quiz.directory/usercontent.dev/unblock
-
-### github
-# ipset=/github.com/github.io/:.*githubusercontent.*:/unblock
-
-### cdn
-ipset=/awsstatic.com/aws.amazon.com/amazonaws.com/:.*amazonwebservices.*:/unblock
-ipset=/cloudflare.com/cloudfront.net/unblock
-ipset=/cdn.localizeapi.com/unblock
-EOF
-			chmod 644 "$user_dnsmasq_ipset"
-		fi
+		[ ! -d "$dir_ipset" ] && mkdir -p -m 755 "$dir_ipset"
+		cp_default "$dir_ipset/ipset.json" 644
+		cp_default "$dir_ipset/ipset_post_script.sh" 755
 	fi
 
 	# create user inadyn.conf"
 	[ ! -d "$dir_inadyn" ] && mkdir -p -m 755 "$dir_inadyn"
-	if [ ! -f "$user_inadyn_conf" ] ; then
-		cat > "$user_inadyn_conf" <<EOF
-# Custom user conf file for inadyn DDNS client
-# Please add only new custom system!
-
-### Example for twoDNS.de:
-
-#system custom@http_srv_basic_auth
-#  ssl
-#  checkip-url checkip.two-dns.de /
-#  server-name update.twodns.de
-#  server-url /update\?hostname=
-#  username account
-#  password secret
-#  alias example.dd-dns.de
-
-EOF
-		chmod 644 "$user_inadyn_conf"
-	fi
-
-	# create user hosts
-	if [ ! -f "$user_hosts" ] ; then
-		cat > "$user_hosts" <<EOF
-# Custom user hosts file
-# Example:
-# 192.168.1.100		Boo
-
-EOF
-		chmod 644 "$user_hosts"
-	fi
+	cp_default "$dir_inadyn/inadyn.conf" 644
 
 	# create user AP confs
 	[ ! -d "$dir_wlan" ] && mkdir -p -m 755 "$dir_wlan"
-	if [ ! -f "$dir_wlan/AP.dat" ] ; then
-		cat > "$dir_wlan/AP.dat" <<EOF
-# Custom user AP conf file
-
-EOF
-		chmod 644 "$dir_wlan/AP.dat"
-	fi
-
-	if [ ! -f "$dir_wlan/AP_5G.dat" ] ; then
-		cat > "$dir_wlan/AP_5G.dat" <<EOF
-# Custom user AP conf file
-
-EOF
-		chmod 644 "$dir_wlan/AP_5G.dat"
-	fi
+	cp_default "$dir_wlan/AP.dat" 644
+	cp_default "$dir_wlan/AP_5G.dat" 644
 
 	# create openvpn files
 	if [ -x /usr/sbin/openvpn ] ; then
 		[ ! -d "$dir_ovpncli" ] && mkdir -p -m 700 "$dir_ovpncli"
 		[ ! -d "$dir_ovpnsvr" ] && mkdir -p -m 700 "$dir_ovpnsvr"
+
 		dir_ovpn="$dir_storage/openvpn"
 		for i in ca.crt dh1024.pem server.crt server.key server.conf ta.key ; do
 			[ -f "$dir_ovpn/$i" ] && mv -n "$dir_ovpn/$i" "$dir_ovpnsvr"
 		done
-		if [ ! -f "$user_ovpnsvr_conf" ] ; then
-			cat > "$user_ovpnsvr_conf" <<EOF
-# Custom user conf file for OpenVPN server
-# Please add needed params only!
 
-### Max clients limit
-max-clients 10
-
-### Internally route client-to-client traffic
-client-to-client
-
-### Allow clients with duplicate "Common Name"
-;duplicate-cn
-
-### Legacy LZO adaptive compression
-;comp-lzo adaptive
-;push "comp-lzo adaptive"
-
-### Keepalive and timeout
-keepalive 10 60
-
-### Process priority level (0..19)
-nice 3
-
-### Syslog verbose level
-verb 0
-mute 10
-
-EOF
-			chmod 644 "$user_ovpnsvr_conf"
-		fi
-
-		if [ ! -f "$user_ovpncli_conf" ] ; then
-			cat > "$user_ovpncli_conf" <<EOF
-# Custom user conf file for OpenVPN client
-# Please add needed params only!
-
-### If your server certificates with the nsCertType field set to "server"
-remote-cert-tls server
-
-### Process priority level (0..19)
-nice 0
-
-### Syslog verbose level
-verb 0
-mute 10
-
-EOF
-			chmod 644 "$user_ovpncli_conf"
-		fi
+		cp_default "$dir_ovpnsvr/server.conf" 644
+		cp_default "$dir_ovpncli/client.conf" 644
 	fi
 
 	# create strongswan files
@@ -778,37 +312,21 @@ EOF
 		[ ! -d "$dir_sswan_crt/certs" ] && mkdir -p -m 700 "$dir_sswan_crt/certs"
 		[ ! -d "$dir_sswan_crt/private" ] && mkdir -p -m 700 "$dir_sswan_crt/private"
 
-		if [ ! -f "$user_sswan_conf" ] ; then
-			cat > "$user_sswan_conf" <<EOF
-### strongswan.conf - user strongswan configuration file
-
-EOF
-			chmod 644 "$user_sswan_conf"
-		fi
-		if [ ! -f "$user_sswan_ipsec_conf" ] ; then
-			cat > "$user_sswan_ipsec_conf" <<EOF
-### ipsec.conf - user strongswan IPsec configuration file
-
-EOF
-			chmod 644 "$user_sswan_ipsec_conf"
-		fi
-		if [ ! -f "$user_sswan_secrets" ] ; then
-			cat > "$user_sswan_secrets" <<EOF
-### ipsec.secrets - user strongswan IPsec secrets file
-
-EOF
-			chmod 644 "$user_sswan_secrets"
-		fi
-	fi
-
-	# create zapret files
-	if [ -x "$script_zapret" ]; then
-		$script_zapret >/dev/null
+		cp_default "$dir_sswan/strongswan.conf" 644
+		cp_default "$dir_sswan/ipsec.conf" 644
+		cp_default "$dir_sswan/ipsec.secrets" 644
 	fi
 
 	# create tor config
-	if [ -x "$script_tor" ]; then
-		$script_tor config
+	if [ -x /usr/sbin/tor ]; then
+		[ ! -d "$dir_tor" ] && mkdir -p -m 755 "$dir_tor"
+		cp_default "$dir_tor/torrc" 644
+		cp_default "$dir_tor/remote_network.list" 644
+	fi
+
+	# create zapret files
+	if [ -x "/usr/bin/zapret.sh" ]; then
+		/usr/bin/zapret.sh >/dev/null
 	fi
 }
 

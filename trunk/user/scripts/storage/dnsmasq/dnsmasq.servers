@@ -1,0 +1,3 @@
+# Custom user servers file for dnsmasq
+# Example:
+#server=/mit.ru/izmuroma.ru/10.25.11.30

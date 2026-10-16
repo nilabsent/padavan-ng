@@ -1,0 +1,82 @@
+[
+  {
+    "name": "AI",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=ai"
+  },
+  {
+    "name": "Anime",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=anime"
+  },
+  {
+    "name": "Art",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=art"
+  },
+  {
+    "name": "Casino",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=casino"
+  },
+  {
+    "name": "Discord",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=discord"
+  },
+  {
+    "name": "Education",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=education"
+  },
+  {
+    "name": "Finance",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=finance"
+  },
+  {
+    "name": "Games",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=games"
+  },
+  {
+    "name": "Hosting",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=hosting"
+  },
+  {
+    "name": "Jetbrains",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=jetbrains"
+  },
+  {
+    "name": "Messengers",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=messengers"
+  },
+  {
+    "name": "Music",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=music"
+  },
+  {
+    "name": "News",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=news"
+  },
+  {
+    "name": "Porn",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=porn"
+  },
+  {
+    "name": "Shop",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=shop"
+  },
+  {
+    "name": "Socials",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=socials"
+  },
+  {
+    "name": "Tools",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=tools"
+  },
+  {
+    "name": "Torrent",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=torrent"
+  },
+  {
+    "name": "Video",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=video"
+  },
+  {
+    "name": "Youtube",
+    "url": "https://iplist.opencck.org/?format=text&data=cidr4&group=youtube"
+  }
+]

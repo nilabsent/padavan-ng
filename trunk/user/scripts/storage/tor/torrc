@@ -1,0 +1,41 @@
+### https://www.torproject.org/docs/tor-manual.html
+###
+### hardcoded for Padavan firmware:
+### ControlPort 9051
+### TransPort 0.0.0.0:9040
+### DNSPort 0.0.0.0:9053
+### VirtualAddrNetworkIPv4 172.24.0.0/13
+###
+
+# ExcludeExitNodes {RU}, {UA}, {BY}, {KZ}, {MD}, {AZ}, {AM}, {GE}, {LY}, {LT}, {TM}, {UZ}, {EE}
+# StrictNodes 1
+
+SocksPort 0.0.0.0:9050
+HTTPTunnelPort 0.0.0.0:8181
+
+# custom Padavan firmware option: prevent microdescs saved in Datadirectory
+NotSaveMicrodescs 1
+
+DormantTimeoutEnabled 0
+NumEntryGuards 8
+NewCircuitPeriod 30
+LongLivedPorts 80,443
+DormantCanceledByStartup 1
+MaxCircuitDirtiness 120
+KeepalivePeriod 60
+HiddenServiceStatistics 0
+ClientOnly 1
+ExitRelay 0
+ExitPolicy reject *:*
+ExitPolicy reject6 *:*
+AutomapHostsOnResolve 1
+Log notice syslog
+AvoidDiskWrites 1
+UseBridges 1
+
+### https://github.com/Delta-Kronecker/Tor-Bridges-Collector/blob/main/bridge/vanilla.txt
+### https://bridges.torproject.org/bridges?transport=vanilla
+
+Bridge 107.191.102.246:11111 03F427B05F658D152B2DBB9A6B25FC722C831174
+Bridge 67.217.246.127:9001 9AA946B39AD5334B7EA5B805CB3913F7D377D030
+Bridge 185.177.207.247:14247 B8B20E8D2EDDCD1C2A6C927FE36B722B594058CE

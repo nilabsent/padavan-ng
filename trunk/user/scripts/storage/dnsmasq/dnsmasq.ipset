@@ -1,0 +1,73 @@
+### Custom user ipsets for dnsmasq
+### Changing the list flushes all affected ipsets
+
+### for testing
+ipset=/ifconfig.me/unblock
+# ipset=/ipecho.net/unblock
+# ipset=/eth0.me/unblock
+
+ipset=/ralinktech.com/unblock
+ipset=/nessus.org/unblock
+ipset=/tenable.com/unblock
+ipset=/broadcom.com/unblock
+ipset=/matt.ucc.asn.au/unblock
+ipset=/ccadb.my.salesforce-sites.com/unblock
+ipset=/xda-developers.com/unblock
+ipset=/xdaforums.com/unblock
+ipset=/bunny.net/unblock
+ipset=/vmware.com/unblock
+ipset=/kinozaltv.life/unblock
+ipset=/warpgen.net/unblock
+ipset=/rutor.is/unblock
+ipset=/rutracker.org/unblock
+
+### youtube
+# ipset=/:.*youtube.*:/youtu.be/ggpht.com/ytimg.com/unblock
+# ipset=/yt3.googleusercontent.com/ytimg.l.google.com/unblock
+# ipset=/ytstatic.l.google.com/yt-video-upload.l.google.com/unblock
+# ipset=/googlevideo.com/unblock
+
+### twitch
+# ipset=/twitch.tv/twitchcdn.net/jtvnw.net/ttvnw.net/unblock
+# ipset=/ext-twitch.tv/live-video.net/unblock
+
+### discord
+ipset=/:.*discord.*:/dis.gd/unblock
+
+### tiktok
+# ipset=/:.*tiktok.*:/byteoversea.com/ibytedtos.com/unblock
+# ipset=/muscdn.com/musical.ly/tik-tokapi.com/ttwstatic.com/unblock
+
+### chatgpt
+ipset=/chatgpt.com/cdn.oaistatic.com/oaiusercontent.com/openai.com/unblock
+
+### spotify
+ipset=/:.*spotify.*:/scdn.co/pscdn.co/spoti.fi/unblock
+
+### linkedin
+ipset=/linkedin.com/licdn.com/unblock
+
+### meta, facebook, instagram, whatsapp
+ipset=/instagram.com/ig.me/cdninstagram.com/unblock
+ipset=/fb.com/facebook.com/facebook.net/fbcdn.net/fbsbx.com/internalfb.com/unblock
+ipset=/oculus.com/oculuscdn.com/threads.net/threads.com/unblock
+ipset=/:.*whatsapp.*:/wa.me/unblock
+
+### twitter, x.com
+ipset=/:.*twitter.*:/periscope.tv/pscp.tv/t.co/x.com/unblock
+ipset=/twimg.com/twitpic.com/twtrdns.net/twttr.com/twttr.net/twvid.com/unblock
+ipset=/tellapart.com/tweetdeck.com/vine.co/cms-twdigitalassets.com/unblock
+
+### telegram
+ipset=/:.*telegram.*:/telega.one/telegra.ph/telesco.pe/unblock
+ipset=/t.me/tdesktop.com/tg.dev/tx.me/ton.org/unblock
+ipset=/comments.app/contest.com/fragment.com/unblock
+ipset=/graph.org/quiz.directory/usercontent.dev/unblock
+
+### github
+# ipset=/github.com/github.io/:.*githubusercontent.*:/unblock
+
+### cdn
+ipset=/awsstatic.com/aws.amazon.com/amazonaws.com/:.*amazonwebservices.*:/unblock
+ipset=/cloudflare.com/cloudfront.net/unblock
+ipset=/cdn.localizeapi.com/unblock

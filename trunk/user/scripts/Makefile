@@ -28,3 +28,25 @@ endif
 	$(ROMFSINST) /etc_ro/mdev.conf
 	mkdir -p $(INSTALLDIR)/usr/share/terminfo
 	tar -xzf ./terminfo.tar.gz -C $(INSTALLDIR)/usr/share
+	$(ROMFSINST) -d storage /usr/share/storage
+ifneq ($(CONFIG_FIRMWARE_INCLUDE_SSWAN),y)
+	rm -rf $(INSTALLDIR)/usr/share/storage/strongswan
+endif
+ifneq ($(CONFIG_FIRMWARE_INCLUDE_OPENVPN),y)
+	rm -rf $(INSTALLDIR)/usr/share/storage/openvpn
+endif
+ifneq ($(CONFIG_FIRMWARE_INCLUDE_IPSET),y)
+	rm -rf $(INSTALLDIR)/usr/share/storage/ipset
+	rm -f $(INSTALLDIR)/usr/share/storage/dnsmasq/dnsmasq.ipset
+endif
+ifneq ($(CONFIG_FIRMWARE_INCLUDE_WPAD),y)
+	rm -f $(INSTALLDIR)/usr/share/storage/wpad.dat
+endif
+ifeq (,$(filter y,$(CONFIG_FIRMWARE_INCLUDE_WIREGUARD) $(CONFIG_FIRMWARE_INCLUDE_AMNEZIAWG)))
+	rm -f $(INSTALLDIR)/usr/share/storage/vpnc_exclude_network.list
+	rm -f $(INSTALLDIR)/usr/share/storage/vpnc_remote_network.list
+	rm -f $(INSTALLDIR)/usr/share/storage/vpnc_post_script.sh
+endif
+ifneq ($(CONFIG_FIRMWARE_INCLUDE_TOR),y)
+	rm -rf $(INSTALLDIR)/usr/share/storage/tor
+endif
