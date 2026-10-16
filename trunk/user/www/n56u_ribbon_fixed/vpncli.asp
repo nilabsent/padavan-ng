@@ -41,12 +41,13 @@ $j(document).ready(function() {
 <% login_state_hook(); %>
 <% openvpn_cli_cert_hook(); %>
 
-lan_ipaddr_x = '<% nvram_get_x("", "lan_ipaddr"); %>';
-lan_netmask_x = '<% nvram_get_x("", "lan_netmask"); %>';
-fw_enable_x = '<% nvram_get_x("", "fw_enable_x"); %>';
-vpnc_state_last = '<% nvram_get_x("", "vpnc_state_t"); %>';
-ip6_service = '<% nvram_get_x("", "ip6_service"); %>';
-vpnc_type = '<% nvram_get_x("", "vpnc_type"); %>';
+let lan_ipaddr_x = '<% nvram_get_x("", "lan_ipaddr"); %>';
+let lan_netmask_x = '<% nvram_get_x("", "lan_netmask"); %>';
+let fw_enable_x = '<% nvram_get_x("", "fw_enable_x"); %>';
+let vpnc_state_last = '<% nvram_get_x("", "vpnc_state_t"); %>';
+let ip6_service = '<% nvram_get_x("", "ip6_service"); %>';
+let vpnc_type = '<% nvram_get_x("", "vpnc_type"); %>';
+let IPSetList = [<% get_ipset_list_hook(); %>];
 
 function initial(){
 	show_banner(0);
@@ -776,27 +777,59 @@ function vpnc_access_control() {
 	if (!found_support_ipset())
 		return;
 
-	allowed_list = "<% nvram_get_x("", "vpnc_ipset_allowed"); %>";
-	added_list = "<% nvram_get_x("", "vpnc_ipset"); %>";
+	const excludeNames = new Set([
+		"nozapret",
+		"nozapret6",
+		"vpn.remote", "vpn.exclude", "vpn.clients",
+		"tor.remote", "tor.exclude", "tor.clients"
+	]);
 
+	allowed_list = "<% nvram_get_x("", "vpnc_ipset_allowed"); %>";
 	allowed = allowed_list.replace(/\s+/g, '').split(',')
 		.filter(Boolean)
-		.map(item => item);
-	added = added_list.replace(/\s+/g, '').split(',')
-		.filter(Boolean)
-		.filter(item => !allowed.includes(item))
-		.map(item => ( {text: item, checked: false } ));
+		.map(item => ({text: item, checked: true }));
 
-	const ipset = [
-		...allowed.map(item => ({text: item, checked: true })),
-		...added
-	];
+	const map = new Map(
+		allowed.map(item => [item.text, {...item, title: ""}])
+	);
+
+	for (const item of IPSetList) {
+		if (excludeNames.has(item.name)) {
+			continue;
+		}
+
+		// russian word declension...
+		const title = item.entries
+			? `${item.entries} ${declOfNum(item.entries, ['<#Entries1#>', '<#Entries2#>', '<#Entries#>'])}`
+			: "";
+
+		if (map.has(item.name)) {
+			map.get(item.name).title = title;
+		} else {
+			map.set(item.name, {text: item.name, title, checked: false});
+		}
+	}
+
+	const result = [...map.values()].sort((a, b) => {
+		if (a.checked !== b.checked) {
+			return a.checked ? -1 : 1;
+		}
+
+		const aUpper = a.text[0] === a.text[0].toUpperCase();
+		const bUpper = b.text[0] === b.text[0].toUpperCase();
+
+		if (aUpper !== bUpper) {
+			return aUpper ? -1 : 1;
+		}
+
+		return a.text.localeCompare(b.text);
+	});
 
 	$j('#vpnc_ipset').multiSelectDropdown({
-		items: ipset,
+		items: result,
 		placeholder: "<#Select_menu_default#>",
 		width: '320px',
-		allowDelete: true,
+		allowDelete: false,
 		allowAdd: true,
 		addSuggestionText: '<#CTL_add#>',
 		removeSpaces: true,
@@ -804,9 +837,6 @@ function vpnc_access_control() {
 		allowedAlert: '<#JS_field_noletter#>',
 		onChange: function(selected){
 			document.form.vpnc_ipset_allowed.value = selected.join(',');
-			document.form.vpnc_ipset.value = this.multiSelectDropdown('getAllItems')
-				.map(item => item.text)
-				.join(',');
 		}
 	});
 }
@@ -817,6 +847,10 @@ function vpnc_access_control() {
     .caption-bold {
         font-weight: bold;
     }
+
+    #vpnc_ipset .msd-title {
+        font-size: 13px;
+  }
 </style>
 
 </head>
@@ -1428,17 +1462,7 @@ function vpnc_access_control() {
                                     <th width="50%"><#VPNC_IpsetList#>:</th>
                                     <td>
                                         <span id="vpnc_ipset"></span>
-                                        <input type="hidden" name="vpnc_ipset" value="<% nvram_get_x("", "vpnc_ipset"); %>">
                                         <input type="hidden" name="vpnc_ipset_allowed" value="<% nvram_get_x("", "vpnc_ipset_allowed"); %>">
-                                    </td>
-                                </tr>
-
-                                <tr id="row_dipset" style="display: none">
-                                    <td colspan="2">
-                                        <a href="javascript:spoiler_toggle('spoiler_dipset')"><span><#CustomConf#> "dnsmasq.ipset"</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
-                                        <div id="spoiler_dipset" style="display:none;">
-                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="32768" class="span12" name="dnsmasq.dnsmasq.ipset" style="resize: vertical; font-family:'Courier New'; font-size:12px;"><% nvram_dump("dnsmasq.dnsmasq.ipset",""); %></textarea>
-                                        </div>
                                     </td>
                                 </tr>
 
@@ -1446,15 +1470,24 @@ function vpnc_access_control() {
                                     <td colspan="2">
                                         <a href="javascript:spoiler_toggle('spoiler_vpnc_remote_network')"><span><#VPNC_RNet_List#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
                                         <div id="spoiler_vpnc_remote_network" style="display: none">
-                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="32768" class="span12" name="scripts.vpnc_remote_network.list" style="font-family:'Courier New'; font-size:12px; resize:vertical;"><% nvram_dump("scripts.vpnc_remote_network.list",""); %></textarea>
+                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="65536" class="span12" name="scripts.vpnc_remote_network.list" style="font-family:'Courier New'; font-size:12px; resize:vertical;"><% nvram_dump("scripts.vpnc_remote_network.list",""); %></textarea>
                                         </div>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="2" style="padding-bottom: 0px;">
+                                    <td colspan="2">
                                         <a href="javascript:spoiler_toggle('spoiler_vpnc_exclude_network')"><span><#VPNC_ExcludeList#>:</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
                                         <div id="spoiler_vpnc_exclude_network" style="display: none">
-                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="32768" class="span12" name="scripts.vpnc_exclude_network.list" style="font-family:'Courier New'; font-size:12px; resize:vertical; margin-bottom: 0px"><% nvram_dump("scripts.vpnc_exclude_network.list",""); %></textarea>
+                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="65536" class="span12" name="scripts.vpnc_exclude_network.list" style="font-family:'Courier New'; font-size:12px; resize:vertical"><% nvram_dump("scripts.vpnc_exclude_network.list",""); %></textarea>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr id="row_dipset" style="padding-bottom: 0px; display: none">
+                                    <td colspan="2">
+                                        <a href="javascript:spoiler_toggle('spoiler_dipset')"><span><#CustomConf#> "dnsmasq.ipset"</span> <i style="scale: 75%;" class="icon-chevron-down"></i></a>
+                                        <div id="spoiler_dipset" style="display:none;">
+                                            <textarea rows="16" wrap="off" spellcheck="false" maxlength="65536" class="span12" name="dnsmasq.dnsmasq.ipset" style="font-family:'Courier New'; font-size:12px; resize: vertical; margin-bottom: 0px"><% nvram_dump("dnsmasq.dnsmasq.ipset",""); %></textarea>
                                         </div>
                                     </td>
                                 </tr>

@@ -159,7 +159,7 @@ function resolver_del(index){
 }
 
 function resolver_list_update() {
-	var code = `<table width="100%" style="table-layout: fixed; margin: 0; border: 1px solid #DDDDDD">`;
+	var code = `<table width="100%" style="table-layout: fixed; margin: 0; border: 1px solid #E3E3E3">`;
 	var resolver;
 	var port = Number($j(dnscrypt_listen_port).val());
 	var ip = "127.0.0.1";
@@ -174,10 +174,10 @@ function resolver_list_update() {
 		if (Resolvers_List[i]){
 			resolver = normalize(Resolvers_List[i].resolver);
 
-			code += `<tr>`;
-			code += `<td style="width: 49%; word-wrap: break-word">${resolver}</td>`;
-			code += `<td style="word-wrap: break-word">${ip}:${port + i}</td>`;
-			code += `<td style="width: 92px; padding-left: 0px"><div title="<#CTL_del#>" class="icon icon-remove" onclick="resolver_del(${i})" style="cursor:pointer; margin-left: 10px"></div></td>`;
+			code += `<tr ${(i % 2 === 0 ? 'style="background-color: #EEEEEE"' : '')}>`;
+			code += `<td style="width: 49%; word-break: break-all">${resolver}</td>`;
+			code += `<td style="word-break: break-all">${ip}:${port + i}</td>`;
+			code += `<td style="width: 28px; padding-left: 0px"><div title="<#CTL_del#>" class="icon icon-remove" onclick="resolver_del(${i})" style="cursor:pointer; margin-left: 10px"></div></td>`;
 			code += `</tr>`;
 		}
 		code += `<input type="hidden" name="dnscrypt_resolver${i}" value="${resolver}">`;
@@ -201,6 +201,10 @@ function resolver_list_update() {
 <style>
     .caption-bold {
         font-weight: bold;
+    }
+    .nav-tabs > li > a {
+        padding-right: 8px;
+        padding-left: 8px;
     }
 </style>
 </head>
@@ -255,7 +259,7 @@ function resolver_list_update() {
                                     <div id="tabMenu" class="submenuBlock"></div>
                                     <div class="alert alert-info" style="margin: 10px;"><#Service_DNSCrypt_Info#></div>
 
-                                    <table width="100%" cellpadding="4" cellspacing="0" class="table" id="tbl_dnscrypt" style="display:none">
+                                    <table width="100%" cellpadding="4" cellspacing="0" class="table" id="tbl_dnscrypt">
                                         <tr>
                                             <th width="50%" style="border-top: 0 none"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 1);"><#Adm_Svc_dnscrypt#></a></th>
                                             <td style="border-top: 0 none">
@@ -271,7 +275,7 @@ function resolver_list_update() {
                                             </td>
                                         </tr>
 
-                                        <tbody id="dnscrypt_show" style="display:none; border: none">
+                                        <tbody id="dnscrypt_show" style="border: none">
                                         <tr>
                                             <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 6);"><#Service_Stubby_Mode#>:</a></th>
                                             <td>
@@ -304,12 +308,12 @@ function resolver_list_update() {
                                         <tr>
                                             <th><#Adm_Svc_dnscrypt_resolver#></th>
                                             <td>
-                                                <select id="dnscrypt_resolver" name="dnscrypt_resolver" class="input"></select>
+                                                <select style="width: 285px" id="dnscrypt_resolver" name="dnscrypt_resolver" class="input"></select>
                                                 <button type="button" class="btn" style="outline:0" id="resolver_button_add" title="<#CTL_add#>" onclick="resolver_add();"><i class="icon icon-plus"></i></button>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td colspan="3" style="padding-top: 0px; border: none">
+                                            <td colspan="2" style="padding-top: 8px; padding-bottom: 18px; border: none">
                                                 <div id="Resolver_List_Block"></div>
                                             </td>
                                         </tr>

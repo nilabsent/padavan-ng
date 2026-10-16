@@ -162,7 +162,7 @@ function resolver_del(index){
 }
 
 function resolver_list_update() {
-	var code = `<table width="100%" style="table-layout: fixed; margin: 0; border: 1px solid #DDDDDD">`;
+	var code = `<table width="100%" style="table-layout: fixed; margin: 0; border: 1px solid #E3E3E3">`;
 	var resolver;
 	var port = Number($j(doh_listen_port).val());
 	var ip = "127.0.0.1";
@@ -177,10 +177,10 @@ function resolver_list_update() {
 		if (Resolvers_List[i]){
 			resolver = Resolvers_List[i].resolver;
 
-			code += `<tr>`;
-			code += `<td style="width: 49%; word-wrap: break-word">${resolver}</td>`;
-			code += `<td style="word-wrap: break-word">${ip}:${port + i}</td>`;
-			code += `<td style="width: 92px; padding-left: 0px"><div title="<#CTL_del#>" class="icon icon-remove" onclick="resolver_del(${i})" style="cursor:pointer; margin-left: 10px"></div></td>`;
+			code += `<tr ${(i % 2 === 0 ? 'style="background-color: #EEEEEE"' : '')}>`;
+			code += `<td style="width: 60%; word-break: break-all">${resolver}</td>`;
+			code += `<td style="word-break: break-all">${ip}:${port + i}</td>`;
+			code += `<td style="width: 28px; padding-left: 0px"><div title="<#CTL_del#>" class="icon icon-remove" onclick="resolver_del(${i})" style="cursor:pointer; margin-left: 10px"></div></td>`;
 			code += `</tr>`;
 		}
 		code += `<input type="hidden" name="doh_server${i}" value="${resolver}">`;
@@ -198,10 +198,22 @@ function resolver_list_update() {
 	$("Resolver_List_Block").innerHTML = code;
 }
 
+function updateTooltip(input) {
+	if (input.scrollWidth > input.clientWidth) {
+		input.title = input.value;
+	} else {
+		input.removeAttribute('title');
+	}
+}
+
 </script>
 <style>
     .caption-bold {
         font-weight: bold;
+    }
+    .nav-tabs > li > a {
+        padding-right: 8px;
+        padding-left: 8px;
     }
 </style>
 </head>
@@ -256,7 +268,7 @@ function resolver_list_update() {
                                     <div id="tabMenu" class="submenuBlock"></div>
                                     <div class="alert alert-info" style="margin: 10px;"><#Service_DoH_Info#></div>
 
-                                    <table width="100%" cellpadding="4" cellspacing="0" class="table" id="tbl_doh" style="display:none">
+                                    <table width="100%" cellpadding="4" cellspacing="0" class="table" id="tbl_doh">
                                         <tr>
                                             <th width="50%" style="border-top: 0 none"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 3);"><#Adm_Svc_doh#></a></th>
                                             <td style="border-top: 0 none">
@@ -272,7 +284,7 @@ function resolver_list_update() {
                                             </td>
                                         </tr>
 
-                                        <tbody id="doh_show" style="display:none; border: none">
+                                        <tbody id="doh_show" style="border: none">
                                         <tr>
                                             <th width="50%"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 6);"><#Service_Stubby_Mode#>:</a></th>
                                             <td>
@@ -311,7 +323,7 @@ function resolver_list_update() {
                                         <tr>
                                             <th style="padding-bottom: 18px"><#Service_DoH_BootstrapDNS#>:</th>
                                             <td style="padding-bottom: 18px">
-                                                <input type="text" maxlength="128" id="doh_bootstrap_dns" name="doh_bootstrap_dns" class="input" value="<% nvram_get_x("", "doh_bootstrap_dns"); %>"/>
+                                                <input type="text" maxlength="128" id="doh_bootstrap_dns" name="doh_bootstrap_dns" class="input" value="<% nvram_get_x("", "doh_bootstrap_dns"); %>" oninput="updateTooltip(this)" onmouseenter="updateTooltip(this)"/>
                                             </td>
                                         </tr>
                                         <tr>
@@ -321,14 +333,14 @@ function resolver_list_update() {
                                             <th><#Adm_Svc_dnscrypt_resolver#></th>
                                             <td>
                                                 <span class="input-prepend">
-                                                    <input style="border-radius: 3px" type="text" maxlength="128" class="input" size="15" id="doh_server"/>&#8203;
+                                                    <input style="border-radius: 3px; width: 275px" type="text" maxlength="128" class="input" size="15" id="doh_server" oninput="updateTooltip(this)" onmouseenter="updateTooltip(this)"/>&#8203;
                                                     <select title="<#Service_Stubby_Resolvers_Header#>" class="input" id="doh_resolver_list" style="margin-left: -24px; max-width: 24px; outline:0" onchange="on_doh_select_change(this)" onclick="this.selectedIndex=-1;"></select>
                                                 </span>
                                                 <button type="button" class="btn" style="outline:0" id="resolver_button_add" title="<#CTL_add#>" onclick="resolver_add();"><i class="icon icon-plus"></i></button>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td colspan="3" style="padding-top: 0px; border: none">
+                                            <td colspan="2" style="padding-top: 8px; padding-bottom: 18px; border: none">
                                                 <div id="Resolver_List_Block"></div>
                                             </td>
                                         </tr>

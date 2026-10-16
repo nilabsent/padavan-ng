@@ -52,6 +52,5 @@ clean:
 
 romfs:
 	$(ROMFSINST) $(SRC_NAME)/src/ipset /sbin/ipset
-	$(ROMFSINST) -p +x /usr/bin/ipset-import.sh
-	$(ROMFSINST) -p +x /usr/bin/ipset-download.sh
 	$(ROMFSINST) -p +x /usr/bin/ipset-flush-dnsmasq.sh
+	$(ROMFSINST) -p +x /usr/bin/ipset.sh

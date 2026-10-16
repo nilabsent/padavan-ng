@@ -75,6 +75,7 @@
 #define RCN_RESTART_TRMD		"restart_trmd"
 #define RCN_RESTART_ARIA		"restart_aria"
 #define RCN_RESTART_REBOOT		"restart_reboot"
+#define RCN_RESTART_IPSET		"restart_ipset"
 
 ////////////////////////////////////////////////////////////
 

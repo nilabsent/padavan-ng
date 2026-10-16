@@ -238,6 +238,10 @@ function change_crond_enabled(){
     .caption-bold {
         font-weight: bold;
     }
+    .nav-tabs > li > a {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
 </style>
 </head>
 

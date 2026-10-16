@@ -205,6 +205,10 @@ function zapret_strategy_change(o, v) {
         font-family: 'Courier New', Courier, mono;
         font-size: 12px;
     }
+    .nav-tabs > li > a {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
 </style>
 </head>
 
@@ -258,7 +262,7 @@ function zapret_strategy_change(o, v) {
                                     <div id="tabMenu" class="submenuBlock"></div>
                                     <div class="alert alert-info" style="margin: 10px;"><#Adm_Svc_Zapret_Info#></div>
 
-                                    <table width="100%" cellpadding="4" cellspacing="0" class="table" id="tbl_zapret" style="display:none">
+                                    <table width="100%" cellpadding="4" cellspacing="0" class="table" id="tbl_zapret">
                                         <tr>
                                             <th width="50%" style="border-top: 0 none"><a class="help_tooltip" href="javascript:void(0);" onmouseover="openTooltip(this, 25, 2);"><#Adm_Svc_Zapret_Enable#></a></th>
                                             <td style="border-top: 0 none">
@@ -274,7 +278,7 @@ function zapret_strategy_change(o, v) {
                                             </td>
                                         </tr>
 
-                                        <tbody id="row_zapret_service" style="display:none; border: none">
+                                        <tbody id="row_zapret_service" style="border: none">
                                         <tr>
                                             <th><#PPPConnection_x_WANType_statusname#>:</th>
                                             <td>
@@ -315,7 +319,7 @@ function zapret_strategy_change(o, v) {
                                                     <option value="8" <% nvram_match_x("", "zapret_strategy", "8","selected"); %>><#ZapretStrategyProfile#> #8</option>
                                                     <option value="9" <% nvram_match_x("", "zapret_strategy", "9","selected"); %>><#ZapretStrategyProfile#> #9</option>
                                                 </select>
-                                                <input type="button" class="btn btn-mini btn-danger" style="outline:0" onclick="restoreZapret();" value="<#CTL_restore#>"/>
+                                                &nbsp;<input type="button" class="btn btn-info" style="outline:0" onclick="restoreZapret();" value="<#CTL_restore#>"/>
                                             </td>
                                             <tr>
                                                 <td id="zapret.strategy" colspan="2" style="padding-top: 0px; border-top: 0 none; display:none">
@@ -347,7 +351,7 @@ function zapret_strategy_change(o, v) {
                                                             <#ZapretAutomaticList#>:
                                                         </td>
                                                         <td style="border:0px; padding-bottom: 4px; padding-left: 13px; position: relative">
-                                                            <input type="button" class="btn btn-mini btn-danger" style="outline:0; position: absolute; top: -18px; left: 120px" onclick="restoreZapretDomain();" value="<#CTL_restore#>"/>
+                                                            <input type="button" class="btn btn-info" style="max-width: 94px; outline:0; position: absolute; top: -18px; left: 124px" onclick="restoreZapretDomain();" value="<#CTL_restore#>"/>
                                                             <#ZapretExclusionList#>:
                                                         </td>
                                                     </tr>

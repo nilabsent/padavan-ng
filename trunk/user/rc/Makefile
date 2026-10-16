@@ -93,6 +93,7 @@ romfs:
 	cd $(INSTALLDIR)/sbin && ln -sf rc restart_zapret
 	cd $(INSTALLDIR)/sbin && ln -sf rc start_ddns
 	cd $(INSTALLDIR)/sbin && ln -sf rc update_resolvconf
+	cd $(INSTALLDIR)/sbin && ln -sf rc restart_ipset
 	cd $(INSTALLDIR)/sbin && ln -sf rc restart_dns
 	cd $(INSTALLDIR)/sbin && ln -sf rc restart_dhcpd
 	cd $(INSTALLDIR)/sbin && ln -sf rc restart_vpn_server

@@ -143,11 +143,12 @@ function openLink(s) {
 }
 
 function ntpSyncNow(){
-        if (!login_safe())
-                return false;
+	if (!login_safe())
+		return false;
 
-        var cmd = '/sbin/ntpc_syncnow';
-        sendSystemCmd(cmd);
+	$("ntp_btn_update").disabled = 1;
+	sendSystemCmd('/sbin/ntpc_syncnow');
+	setTimeout('$("ntp_btn_update").disabled = 0;', 2000);
 }
 
 </script>
@@ -349,23 +350,23 @@ function ntpSyncNow(){
                                             <th><#Adm_System_ntpp#></th>
                                             <td>
                                                 <select name="ntp_period" class="input">
-                                                    <option value="6"   <% nvram_match_x("","ntp_period",  "6","selected"); %>>6 hours</option>
-                                                    <option value="12"  <% nvram_match_x("","ntp_period", "12","selected"); %>>12 hours</option>
-                                                    <option value="24"  <% nvram_match_x("","ntp_period", "24","selected"); %>>1 day (*)</option>
-                                                    <option value="48"  <% nvram_match_x("","ntp_period", "48","selected"); %>>2 days</option>
-                                                    <option value="72"  <% nvram_match_x("","ntp_period", "72","selected"); %>>3 days</option>
-                                                    <option value="168" <% nvram_match_x("","ntp_period","168","selected"); %>>1 week</option>
-                                                    <option value="336" <% nvram_match_x("","ntp_period","336","selected"); %>>2 weeks</option>
+                                                    <option value="6"   <% nvram_match_x("","ntp_period",  "6","selected"); %>>6 <#period_hours#></option>
+                                                    <option value="12"  <% nvram_match_x("","ntp_period", "12","selected"); %>>12 <#period_hours#></option>
+                                                    <option value="24"  <% nvram_match_x("","ntp_period", "24","selected"); %>>1 <#period_day#> (*)</option>
+                                                    <option value="48"  <% nvram_match_x("","ntp_period", "48","selected"); %>>2 <#period_days#></option>
+                                                    <option value="72"  <% nvram_match_x("","ntp_period", "72","selected"); %>>3 <#period_days#></option>
+                                                    <option value="168" <% nvram_match_x("","ntp_period","168","selected"); %>>1 <#period_week#></option>
+                                                    <option value="336" <% nvram_match_x("","ntp_period","336","selected"); %>>2 <#period_weeks#></option>
                                                     <option value="0"   <% nvram_match_x("","ntp_period",  "0","selected"); %>><#btn_Disable#></option>
                                                 </select>
-                                                <input type="button" class="btn btn-mini" style="outline:0" onclick="ntpSyncNow();" value="<#CTL_refresh#>"/>
+                                                &nbsp;<input id="ntp_btn_update" type="button" class="btn btn-info" style="max-width: 94px; outline:0" onclick="ntpSyncNow();" value="<#CTL_refresh#>"/>
                                             </td>
                                         </tr>
                                         <tr>
                                             <th><a class="help_tooltip"  href="javascript:void(0);" onmouseover="openTooltip(this,11,3)"><#LANHostConfig_x_NTPServer1_itemname#> 1:</a></th>
                                             <td>
                                                 <input type="text" maxlength="128" class="input" size="32" name="ntp_server0" value="<% nvram_get_x("","ntp_server0"); %>" onKeyPress="return is_string(this,event);"/>
-                                                <a href="javascript:openLink('x_NTPServer1')" class="label label-info" name="x_NTPServer1_link"><#LANHostConfig_x_NTPServer1_linkname#></a>
+                                                &nbsp;<a href="javascript:openLink('x_NTPServer1')" class="label label-info" name="x_NTPServer1_link"><#LANHostConfig_x_NTPServer1_linkname#></a>
                                             </td>
                                         </tr>
                                         <tr>

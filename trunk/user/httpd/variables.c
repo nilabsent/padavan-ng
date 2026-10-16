@@ -477,6 +477,12 @@
 #if defined (USE_IPV6)
 			{"force_mld", "", NULL, EVM_RESTART_SYSCTL},
 #endif
+#if defined(SUPPORT_IPSET)
+			{"ipset_enable", "", NULL, EVM_RESTART_IPSET},
+			{"ipset_period", "", NULL, FALSE},
+			{"ipsetes.ipset.json", "File", NULL, EVM_RESTART_IPSET},
+			{"ipsetes.ipset_post_script.sh", "File", NULL, EVM_RESTART_IPSET},
+#endif
 			{"udpxy_enable_x", "", NULL, EVM_RESTART_IPTV},
 			{"xupnpd_enable_x", "", NULL, EVM_RESTART_IPTV},
 			{"xupnpd_udpxy", "", NULL, EVM_RESTART_IPTV},
@@ -575,7 +581,6 @@
 			{"torconf.remote_network.list", "File", NULL, EVM_UPDATE_TOR},
 			{"tor_clients", "", NULL, FALSE},
 			{"tor_clients_allowed", "", NULL, EVM_UPDATE_TOR},
-			{"tor_ipset", "", NULL, FALSE},
 			{"tor_ipset_allowed", "", NULL, EVM_UPDATE_TOR},
 			{"tor_proxy_mode", "", NULL, EVM_UPDATE_TOR},
 #endif
@@ -671,7 +676,6 @@
 			{"vpnc_rmsk", "", NULL, EVM_RESTART_VPNCLI},
 			{"vpnc_clients", "", NULL, FALSE},
 			{"vpnc_clients_allowed", "", NULL, EVM_REAPPLY_VPNCLI},
-			{"vpnc_ipset", "", NULL, FALSE},
 			{"vpnc_ipset_allowed", "", NULL, EVM_REAPPLY_VPNCLI},
 #if defined(APP_WIREGUARD)
 			{"vpns_wg_port", "", NULL, EVM_RESTART_VPNSVR},
@@ -1066,7 +1070,10 @@
 		{EVM_REAPPLY_VPNSVR,		EVT_REAPPLY_VPNSVR,		RCN_REAPPLY_VPNSVR,	0},
 		{EVM_REAPPLY_VPNCLI,		EVT_REAPPLY_VPNCLI,		RCN_REAPPLY_VPNCLI,	0},
 		{EVM_RESTART_DHCPD,		EVT_RESTART_DHCPD,		RCN_RESTART_DHCPD,	0},
+#if defined(SUPPORT_IPSET)
 		{EVM_FLUSH_IPSET_DHCPD,		EVT_FLUSH_IPSET_DHCPD,		RCN_FLUSH_IPSET_DHCPD,	0},
+		{EVM_RESTART_IPSET,		EVT_RESTART_IPSET,		RCN_RESTART_IPSET,	0},
+#endif
 		{EVM_RESTART_SWITCH_CFG,	EVT_RESTART_SWITCH_CFG,		RCN_RESTART_SWITCH_CFG,	0},
 		{EVM_RESTART_SWITCH_VLAN,	EVT_RESTART_SWITCH_VLAN,	RCN_RESTART_SWITCH_VLAN,0},
 		{EVM_RESTART_DDNS,		EVT_RESTART_DDNS,		RCN_RESTART_DDNS,	0},

@@ -719,6 +719,8 @@ ej_dump(int eid, webs_t wp, int argc, char **argv)
 		snprintf(filename, sizeof(filename), "%s/%s", STORAGE_ZAPRET_DIR, file+8);
 	else if (strncmp(file, "privoxy.", 8)==0)
 		snprintf(filename, sizeof(filename), "%s/%s", STORAGE_PRIVOXY_DIR, file+8);
+	else if (strncmp(file, "ipsetes.", 8)==0)
+		snprintf(filename, sizeof(filename), "%s/%s", STORAGE_IPSET_DIR, file+8);
 	else
 		snprintf(filename, sizeof(filename), "%s/%s", "/tmp", file);
 
@@ -950,6 +952,14 @@ validate_asp_apply(webs_t wp, int sid)
 #if defined(APP_PRIVOXY)
 			else if (!strncmp(v->name, "privoxy.", 8)) {
 				if (write_textarea_to_file(value, STORAGE_PRIVOXY_DIR, file_name)) {
+					restart_needed_bits |= event_mask;
+					need_mtd_write = 1;
+				}
+			}
+#endif
+#if defined(SUPPORT_IPSET)
+			else if (!strncmp(v->name, "ipsetes.", 8)) {
+				if (write_textarea_to_file(value, STORAGE_IPSET_DIR, file_name)) {
 					restart_needed_bits |= event_mask;
 					need_mtd_write = 1;
 				}
@@ -2017,7 +2027,7 @@ nf_values_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	FILE *fp;
 	char nf_count[32];
-	
+
 	fp = fopen("/proc/sys/net/netfilter/nf_conntrack_count", "r");
 	if (fp) {
 		nf_count[0] = 0;
@@ -2039,20 +2049,59 @@ static int
 net_iface_list_hook(int eid, webs_t wp, int argc, char **argv)
 {
 	FILE *fp;
-	char ifaces[256];
+	char ifaces[256] = {0};
 
-	fp = popen("ls -1 /sys/class/net | grep -vE '^(lo|ra[0-9]|rai[0-9]|wds)' | tr '\n' ','", "r");
+	fp = popen("ls -1 /sys/class/net"
+		   "| grep -vE '^(lo|ra[0-9]|rai[0-9]|wds)'"
+		   "| xargs | tr -s ' ' ','", "r");
+	if (fp ) {
+		fgets(ifaces, sizeof(ifaces), fp);
+		pclose(fp);
+		if (strlen(ifaces) > 0)
+			ifaces[strlen(ifaces) - 1] = 0;
+	}
+
+	websWrite(wp, "function net_iface_list() { return '%s';}\n", ifaces);
+	return 0;
+}
+
+static int
+get_ipset_list_hook(int eid, webs_t wp, int argc, char **argv)
+{
+#if defined(SUPPORT_IPSET)
+	FILE *fp;
+	const char *cmd = "ipset -q -t list | grep -E '^(Name|Number of entries):'";
+	char line[256] = {0};
+	char name[128] = {0};
+	char entries[32] = {0};
+	int first = 1;
+	int waiting_for_entries = 0;
+
+	fp = popen(cmd, "r");
 	if (fp == NULL) {
 		return 1;
 	}
 
-	if (fgets(ifaces, sizeof(ifaces), fp) == NULL) {
-		pclose(fp);
-		return 1;
-	}
-	pclose(fp);
+	while (fgets(line, sizeof(line), fp)) {
+		line[strcspn(line, "\r\n")] = 0;
 
-	websWrite(wp, "function net_iface_list() { return '%s';}\n", ifaces);
+		if (strncmp(line, "Name: ", 6) == 0) {
+			sscanf(line + 6, " %127s", name);
+			waiting_for_entries = 1;
+		}
+		else if (strncmp(line, "Number of entries: ", 19) == 0 && waiting_for_entries) {
+			sscanf(line + 19, " %31s", entries);
+			if (!first) {
+				websWrite(wp, ",");
+			}
+			websWrite(wp, "{\"name\": \"%s\", \"entries\": \"%s\"}", name, entries);
+			first = 0;
+			waiting_for_entries = 0;
+		}
+	}
+
+	pclose(fp);
+#endif
 	return 0;
 }
 
@@ -4149,6 +4198,7 @@ struct ej_handler ej_handlers[] =
 	{ "openvpn_srv_cert_hook", openvpn_srv_cert_hook},
 	{ "openvpn_cli_cert_hook", openvpn_cli_cert_hook},
 	{ "net_iface_list", net_iface_list_hook},
+	{ "get_ipset_list_hook", get_ipset_list_hook},
 	{ NULL, NULL }
 };
 

@@ -570,6 +570,11 @@ void stop_dnscrypt(void);
 void start_dnscrypt(void);
 void restart_dnscrypt(void);
 #endif
+#if defined (SUPPORT_IPSET)
+void stop_ipset(void);
+void start_ipset(void);
+void restart_ipset(void);
+#endif
 
 /* services_ex.c */
 int fill_dnsmasq_servers(void);

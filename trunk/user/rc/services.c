@@ -365,6 +365,28 @@ void reload_zapret(void){
 }
 #endif
 
+#if defined (SUPPORT_IPSET)
+int is_ipset_run(void){
+	if (pids("ipset"))
+		return 1;
+	return 0;
+}
+
+void stop_ipset(void){
+	eval("/usr/bin/ipset.sh", "stop");
+}
+
+void start_ipset(void){
+	if (!get_ap_mode() && nvram_get_int("ipset_enable") == 1)
+		system("/usr/bin/ipset.sh start &");
+}
+
+void restart_ipset(void){
+	stop_ipset();
+	start_ipset();
+}
+#endif
+
 #if defined(APP_TOR)
 int
 is_tor_run(void)
@@ -743,6 +765,9 @@ stop_services(int stopall)
 	stop_igmpproxy(NULL);
 #if defined(SUPPORT_ZRAM)
 	stop_zram();
+#endif
+#if defined (SUPPORT_IPSET)
+	stop_ipset;
 #endif
 }
 

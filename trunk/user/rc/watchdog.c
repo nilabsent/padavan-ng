@@ -68,6 +68,8 @@ static int ntpc_timer = -1;
 static int ntpc_server_idx = 0;
 static int ntpc_tries = 0;
 
+static int ipset_timer = -1;
+
 static int httpd_missing = 0;
 static int dnsmasq_missing = 0;
 
@@ -391,6 +393,28 @@ ntpc_handler(void)
 	}
 }
 
+#if defined (SUPPORT_IPSET)
+static void
+ipset_handler(void)
+{
+	int ipset_period = nvram_get_int("ipset_period");
+
+	if (ipset_period < 1)
+		return;
+
+	if (ipset_period > 336)
+		ipset_period = 336; // max two weeks
+
+	ipset_period = ipset_period * 360;
+
+	// update ipset every period time
+	ipset_timer = (ipset_timer + 1) % ipset_period;
+	if (ipset_timer == 0) {
+		notify_rc(RCN_RESTART_IPSET);
+	}
+}
+#endif
+
 static void
 inet_handler(int is_ap_mode)
 {
@@ -408,6 +432,12 @@ inet_handler(int is_ap_mode)
 		{
 			/* sync time to ntp server if necessary */
 			ntpc_handler();
+#if defined (SUPPORT_IPSET)
+			ipset_handler();
+#endif
+#if defined (APP_WIREGUARD)
+			watchdog_wireguard_client();
+#endif
 		}
 	}
 	else
@@ -1093,9 +1123,6 @@ watchdog_on_timer(void)
 	/* DNS/DHCP server check */
 	if (!is_ap_mode) {
 		dnsmasq_process_check();
-#if defined (APP_WIREGUARD)
-		watchdog_wireguard_client();
-#endif
 	}
 
 	inet_handler(is_ap_mode);

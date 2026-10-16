@@ -96,6 +96,7 @@ typedef u_int8_t u8;
 #define EVM_UPDATE_TOR			(1ULL << 51)
 #define EVM_RELOAD_TOR			(1ULL << 52)
 #define EVM_FLUSH_IPSET_DHCPD		(1ULL << 53)
+#define EVM_RESTART_IPSET		(1ULL << 54)
 
 #define EVM_RELOAD_FIREWALL		(1ULL << 60)
 #define EVM_RESTART_REBOOT		(1ULL << 62)
@@ -160,6 +161,7 @@ typedef u_int8_t u8;
 #define EVT_RESTART_PRIVOXY		1
 #define EVT_RESTART_DNSCRYPT		1
 #define EVT_RESTART_ZRAM		1
+#define EVT_RESTART_IPSET		1
 #define EVT_RESTART_REBOOT		40
 
 struct variable

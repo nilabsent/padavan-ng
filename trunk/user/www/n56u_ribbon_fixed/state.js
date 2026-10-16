@@ -415,7 +415,7 @@ tablink[3] = new Array("", "Advanced_WAN_Content.asp", "Advanced_IPv6_Content.as
 tablink[4] = new Array("", "Advanced_BasicFirewall_Content.asp", "Advanced_Netfilter_Content.asp", "Advanced_URLFilter_Content.asp", "Advanced_MACFilter_Content.asp", "Advanced_Firewall_Content.asp");
 tablink[5] = new Array("", "Advanced_AiDisk_others.asp", "Advanced_AiDisk_samba.asp", "Advanced_AiDisk_ftp.asp", "Advanced_Modem_others.asp", "Advanced_Printer_others.asp");
 
-tablink[6] = new Array("", "Advanced_Services_Content.asp", "Advanced_Services_DNSCrypt.asp", "Advanced_Services_DoH.asp", "Advanced_Services_DoT.asp", "Advanced_Services_Zapret.asp", "Advanced_Services_Proxy.asp", "Advanced_Services_Service7.asp", "Advanced_Services_Service8.asp");
+tablink[6] = new Array("", "Advanced_Services_Content.asp", "Advanced_Services_DNSCrypt.asp", "Advanced_Services_DoH.asp", "Advanced_Services_DoT.asp", "Advanced_Services_Zapret.asp", "Advanced_Services_Proxy.asp", "Advanced_Services_IPSet.asp", "Advanced_Services_Service8.asp");
 
 tablink[7] = new Array("", "Advanced_System_Content.asp", "Advanced_OperationMode_Content.asp", "Advanced_FirmwareUpgrade_Content.asp", "Advanced_SettingBackup_Content.asp", "Advanced_Console_Content.asp");
 tablink[8] = new Array("", "Advanced_Tweaks_Content.asp", "Advanced_Scripts_Content.asp", "Advanced_InetDetect_Content.asp");
@@ -431,7 +431,7 @@ menuL1_title = new Array("", "<#menu1#>", "<#menu3#>", "<#menu2#>", "<#menu6#>",
 menuL1_link = new Array("", "index.asp", "aidisk.asp", "vpnsrv.asp", "vpncli.asp", "Main_TrafficMonitor_realtime.asp", "Advanced_System_Info.asp", "as.asp");
 menuL1_icon = new Array("", "icon-home", "icon-hdd", "icon-retweet", "icon-globe", "icon-tasks", "icon-random", "icon-wrench");
 
-const srv_checks = [found_app_dnscrypt, found_app_doh, found_app_stubby, found_app_zapret, () => found_app_tor() || found_app_privoxy()];
+const srv_checks = [found_app_dnscrypt, found_app_doh, found_app_stubby, found_app_zapret, () => found_app_tor() || found_app_privoxy(), found_support_ipset];
 
 function show_menu(L1, L2, L3){
 	var i;
@@ -481,6 +481,7 @@ function show_menu(L1, L2, L3){
 		tabtitle[6][4] = "";
 		tabtitle[6][5] = "";
 		tabtitle[6][6] = "";
+		tabtitle[6][7] = "";
 	}else{
 		if(sw_mode == '4'){
 			tablink[3].splice(3,2);

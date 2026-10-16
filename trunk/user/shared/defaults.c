@@ -645,7 +645,6 @@ struct nvram_pair router_defaults[] = {
 	{ "tor_clients", "192.168.1.0/24,10.8.0.0/24" },
 	{ "tor_clients_allowed", "" },
 #if defined(SUPPORT_IPSET)
-	{ "tor_ipset", "tor" },
 	{ "tor_ipset_allowed", "tor" },
 #endif
 #endif
@@ -801,8 +800,9 @@ struct nvram_pair router_defaults[] = {
 	{ "vpnc_clients", "192.168.1.0/24,10.8.0.0/24" },
 	{ "vpnc_clients_allowed", "" },
 #if defined(SUPPORT_IPSET)
-	{ "vpnc_ipset", "unblock" },
 	{ "vpnc_ipset_allowed", "unblock" },
+	{ "ipset_enable", "0" },
+	{ "ipset_period", "24" },
 #endif
 
 	{ "vpns_ov_mode", "1" },

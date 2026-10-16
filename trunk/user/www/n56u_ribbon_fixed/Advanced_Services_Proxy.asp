@@ -36,6 +36,7 @@ $j(document).ready(function() {
 <% login_state_hook(); %>
 
 var ipmonitor = [<% get_static_client(); %>];
+let IPSetList = [<% get_ipset_list_hook(); %>];
 
 function initial(){
 	show_banner(1);
@@ -43,9 +44,10 @@ function initial(){
 	show_footer();
 	load_body();
 
-	if (found_app_tor() || found_app_privoxy()) {
+	if (found_app_tor() || found_app_privoxy())
 		showhide_div('tbl_anon', 1);
-	}
+	else
+		showhide_div('tbl_anon', 0);
 
 	if(!found_app_tor()){
 		showhide_div('row_tor', 0);
@@ -149,27 +151,59 @@ function change_tor_enabled(){
 	if (!found_support_ipset())
 		return;
 
-	allowed_list = "<% nvram_get_x("", "tor_ipset_allowed"); %>";
-	added_list = "<% nvram_get_x("", "tor_ipset"); %>";
+	const excludeNames = new Set([
+		"nozapret",
+		"nozapret6",
+		"vpn.remote", "vpn.exclude", "vpn.clients",
+		"tor.remote", "tor.exclude", "tor.clients"
+	]);
 
+	allowed_list = "<% nvram_get_x("", "tor_ipset_allowed"); %>";
 	allowed = allowed_list.replace(/\s+/g, '').split(',')
 		.filter(Boolean)
-		.map(item => item);
-	added = added_list.replace(/\s+/g, '').split(',')
-		.filter(Boolean)
-		.filter(item => !allowed.includes(item))
-		.map(item => ( {text: item, checked: false } ));
+		.map(item => ({text: item, checked: true }));
 
-	const ipset = [
-		...allowed.map(item => ({text: item, checked: true })),
-		...added
-	];
+	const map = new Map(
+		allowed.map(item => [item.text, {...item, title: ""}])
+	);
+
+	for (const item of IPSetList) {
+		if (excludeNames.has(item.name)) {
+			continue;
+		}
+
+		// russian word declension...
+		const title = item.entries
+			? `${item.entries} ${declOfNum(item.entries, ['<#Entries1#>', '<#Entries2#>', '<#Entries#>'])}`
+			: "";
+
+		if (map.has(item.name)) {
+			map.get(item.name).title = title;
+		} else {
+			map.set(item.name, {text: item.name, title, checked: false });
+		}
+	}
+
+	const result = [...map.values()].sort((a, b) => {
+		if (a.checked !== b.checked) {
+			return a.checked ? -1 : 1;
+		}
+
+		const aUpper = a.text[0] === a.text[0].toUpperCase();
+		const bUpper = b.text[0] === b.text[0].toUpperCase();
+
+		if (aUpper !== bUpper) {
+			return aUpper ? -1 : 1;
+		}
+
+		return a.text.localeCompare(b.text);
+	});
 
 	$j('#tor_ipset').multiSelectDropdown({
-		items: ipset,
+		items: result,
 		placeholder: "<#Select_menu_default#>",
 		width: '320px',
-		allowDelete: true,
+		allowDelete: false,
 		allowAdd: true,
 		addSuggestionText: '<#CTL_add#>',
 		removeSpaces: true,
@@ -177,9 +211,6 @@ function change_tor_enabled(){
 		allowedAlert: '<#JS_field_noletter#>',
 		onChange: function(selected){
 			document.form.tor_ipset_allowed.value = selected.join(',');
-			document.form.tor_ipset.value = this.multiSelectDropdown('getAllItems')
-				.map(item => item.text)
-				.join(',');
 		}
 	});
 }
@@ -214,6 +245,13 @@ function change_privoxy_enabled(){
     .caption-bold {
         font-weight: bold;
     }
+    .nav-tabs > li > a {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+    #tor_ipset .msd-title {
+        font-size: 13px;
+  }
 </style>
 </head>
 
@@ -265,9 +303,9 @@ function change_privoxy_enabled(){
                             <div class="round_bottom">
                                 <div class="row-fluid">
                                     <div id="tabMenu" class="submenuBlock"></div>
-                                    <div class="alert alert-info" style="margin: 10px;"><#Adm_Svc_desc#></div>
+                                    <div class="alert alert-info" style="margin: 10px;"><#Service_Proxy_Info#></div>
 
-                                    <table width="100%" cellpadding="4" cellspacing="0" class="table" id="tbl_anon" style="display:none">
+                                    <table width="100%" cellpadding="4" cellspacing="0" class="table" id="tbl_anon">
                                         <tr>
                                             <th colspan="2" style="background-color: #E3E3E3;"><#Adm_System_anon#></th>
                                         </tr>
@@ -287,7 +325,7 @@ function change_privoxy_enabled(){
                                             </td>
                                         </tr>
 
-                                        <tr id="row_tor_conf" style="display:none">
+                                        <tr id="row_tor_conf">
                                             <td colspan="2" style="padding: 0; border: 0;">
                                                 <table height="100%" width="100%" cellpadding="0" cellspacing="0" class="table" style="border: 0px; margin: 0px;">
                                                     <tr>
@@ -312,7 +350,6 @@ function change_privoxy_enabled(){
                                                         <th width="50%"><#Adm_Svc_TorListIpset#>:</th>
                                                         <td>
                                                             <span id="tor_ipset"></span>
-                                                            <input type="hidden" name="tor_ipset" value="<% nvram_get_x("", "tor_ipset"); %>">
                                                             <input type="hidden" name="tor_ipset_allowed" value="<% nvram_get_x("", "tor_ipset_allowed"); %>">
                                                         </td>
                                                     </tr>
