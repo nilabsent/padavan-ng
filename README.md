@@ -3,8 +3,8 @@
 Форк репозитория [**alxdm**](https://gitlab.com/dm38/padavan-ng)
 
 #### Добавлены/обновлены:
-- компоненты прошивки: `openssl`, `busybox`, `dnsmasq`, `dropbear`, `openssh`, `miniupnpd`, `iptables`, `openvpn`, `zapret`, `ipset`, `tor`, `amneziawg 2.0` и пр.
-- веб-интерфейсы для `https-dns-proxy`, `stubby`, `dnscrypt`, `wireguard`, `amneziawg 2.0`, `zapret` и пр.
+- компоненты прошивки: `openssl`, `busybox`, `dnsmasq`, `dropbear`, `openssh`, `miniupnpd`, `iptables`, `openvpn`, `zapret`, `ipset`, `tor`, `amneziawg 3.1` и пр.
+- веб-интерфейсы для `https-dns-proxy`, `stubby`, `dnscrypt`, `wireguard`, `amneziawg 3.1`, `zapret` и пр.
 
 #### Установка зависимостей для сборки прошивки под Ubuntu 24.04:
 ```
