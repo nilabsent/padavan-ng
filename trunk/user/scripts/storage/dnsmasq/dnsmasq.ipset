@@ -49,7 +49,7 @@ ipset=/:.*spotify.*:/scdn.co/pscdn.co/spoti.fi/unblock_spotify
 ipset=/linkedin.com/licdn.com/unblock_linkedin
 
 ### meta, facebook, instagram, whatsapp
-ipset=/instagram.com/ig.me/cdninstagram.com/unblock_meta
+ipset=/instagram.com/ig.me/cdninstagram.com/meta.ai/unblock_meta
 ipset=/fb.com/facebook.com/facebook.net/fbcdn.net/fbsbx.com/internalfb.com/unblock_meta
 ipset=/oculus.com/oculuscdn.com/threads.net/threads.com/unblock_meta
 ipset=/:.*whatsapp.*:/wa.me/unblock_meta
