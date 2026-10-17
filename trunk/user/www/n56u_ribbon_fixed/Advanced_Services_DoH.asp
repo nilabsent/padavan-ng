@@ -333,8 +333,8 @@ function updateTooltip(input) {
                                             <th><#Adm_Svc_dnscrypt_resolver#></th>
                                             <td>
                                                 <span class="input-prepend">
-                                                    <input style="border-radius: 3px; width: 275px" type="text" maxlength="128" class="input" size="15" id="doh_server" oninput="updateTooltip(this)" onmouseenter="updateTooltip(this)"/>&#8203;
-                                                    <select title="<#Service_Stubby_Resolvers_Header#>" class="input" id="doh_resolver_list" style="margin-left: -24px; max-width: 24px; outline:0" onchange="on_doh_select_change(this)" onclick="this.selectedIndex=-1;"></select>
+                                                    <input style="border-radius: 3px 0 0 3px; width: 251px" type="text" maxlength="128" class="input" size="15" id="doh_server" oninput="updateTooltip(this)" onmouseenter="updateTooltip(this)"/>&#8203;
+                                                    <select title="<#Service_Stubby_Resolvers_Header#>" class="input" id="doh_resolver_list" style="margin-left: -1px; max-width: 24px; outline:0" onchange="on_doh_select_change(this)" onclick="this.selectedIndex=-1;"></select>
                                                 </span>
                                                 <button type="button" class="btn" style="outline:0" id="resolver_button_add" title="<#CTL_add#>" onclick="resolver_add();"><i class="icon icon-plus"></i></button>
                                             </td>
