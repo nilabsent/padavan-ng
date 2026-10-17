@@ -830,7 +830,7 @@ function vpnc_access_control() {
 		placeholder: "<#Select_menu_default#>",
 		width: '320px',
 		allowDelete: false,
-		allowAdd: true,
+		allowAdd: false,
 		addSuggestionText: '<#CTL_add#>',
 		removeSpaces: true,
 		allowedItems: '^[a-zA-Z0-9-_.]+$',
