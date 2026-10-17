@@ -2,9 +2,9 @@
 ### Changing the list flushes all affected ipsets
 
 ### for testing
-ipset=/ifconfig.me/unblock
-# ipset=/ipecho.net/unblock
-# ipset=/eth0.me/unblock
+ipset=/ifconfig.me/unblock_test
+# ipset=/ipecho.net/unblock_test
+# ipset=/eth0.me/unblock_test
 
 ipset=/bbci.co.uk/unblock
 ipset=/ralinktech.com/unblock
