@@ -557,6 +557,7 @@
 			{"zapret_strategy", "", NULL, EVM_RESTART_ZAPRET},
 			{"zapret_clients", "", NULL, FALSE},
 			{"zapret_clients_allowed", "", NULL, EVM_RESTART_ZAPRET},
+			{"zapret_ipset_exclude", "", NULL, EVM_RESTART_ZAPRET},
 			{"zapretc.post_script.sh", "File", NULL, EVM_RESTART_ZAPRET},
 			{"zapretc.strategy", "File", NULL, EVM_RESTART_ZAPRET},
 			{"zapretc.strategy0", "File", NULL, EVM_RESTART_ZAPRET},

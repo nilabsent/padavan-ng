@@ -52,6 +52,9 @@ HOSTLIST="
 unset IPSET
 [ -x "/sbin/ipset" ] && IPSET=1
 
+IPSET_EXCLUDE_LIST="$(nvram get zapret_ipset_exclude | tr -s ' ,' '\n')"
+# reserved: nozapret, nozapret6, nozapret.list
+
 ###
 
 log()
@@ -132,37 +135,64 @@ filter_ipv4()
 
 ipset_create_exclude()
 {
+    # ipv4
+
     [ -n "$IPSET" ] || return
 
-    ipset -q create nozapret$1 nethash family inet$1
-    ipset -q flush nozapret$1
+    ipset -q create nozapret nethash
+    ipset -q flush nozapret
+
+    filter_ipv4 < "${CONF_DIR}/ipset-exclude.list" \
+        | sed -E 's#^(.*)$#add nozapret \1 -exist#' \
+        | ipset -! restore
 
     local i
-    if [ -n "$1" ]; then
-        for i in ::1 fc00::/7 fe80::/10
-        do
-            ipset -q add nozapret$1 $i
-        done
-    else
-        filter_ipv4 < "${CONF_DIR}/ipset-exclude.list" \
-            | sed -E 's#^(.*)$#add nozapret \1 -exist#' \
-            | ipset -! restore
+    for i in \
+        127.0.0.0/8 169.254.0.0/16 100.64.0.0/10 \
+        198.18.0.0/15 192.88.99.0/24 192.0.0.0/24 \
+        192.0.2.0/24 198.51.100.0/24 203.0.113.0/24 \
+        192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 \
+        224.0.0.0/4 240.0.0.0/4
+    do
+        ipset -q add nozapret $i -exist
+    done
 
-        for i in \
-            127.0.0.0/8 169.254.0.0/16 100.64.0.0/10 \
-            198.18.0.0/15 192.88.99.0/24 192.0.0.0/24 \
-            192.0.2.0/24 198.51.100.0/24 203.0.113.0/24 \
-            192.168.0.0/16 10.0.0.0/8 172.16.0.0/12 \
-            224.0.0.0/4 240.0.0.0/4
-        do
-            ipset -q add nozapret $i
-        done
-    fi
+    ipset -q create nozapret.list list:set
+    ipset flush nozapret.list
+
+    for i in nozapret $IPSET_EXCLUDE_LIST; do
+        ipset -q create $i nethash -exist
+        ipset -q add nozapret.list "$i" -exist
+    done
 }
 
-ipset_exclude()
+ipset_create_exclude6()
 {
-    echo "-m set --match-set nozapret$2 $1"
+    # ipv6
+
+    [ -n "$IPSET" ] || return
+
+    ipset -q create nozapret6 nethash family inet6
+    ipset -q flush nozapret6
+
+    local i
+    for i in ::1 fc00::/7 fe80::/10
+    do
+        ipset -q add nozapret6 $i
+    done
+
+    ipset -q create nozapret.list list:set
+    ipset -q add nozapret.list nozapret6 -exist
+}
+
+ipset_destroy()
+{
+    [ -n "$IPSET" ] || return
+
+    local i
+    for i in nozapret nozapret6 nozapret.list; do
+        ipset -q destroy $i
+    done
 }
 
 get_ipset_name_hash()
@@ -289,15 +319,15 @@ mangle_chain_rules()
     [ -z "$1" ] && [ -n "$IPSET" ] && for i in $IPSET_FWMARK; do
         if hash=$(get_ipset_name_hash "$i"); then
             ipset -q create $i nethash family inet \
-            && log "'$i' created successfully"
+                && log "'$i' created successfully"
 
             echo "-A zapret_mark -m set --match-set $i dst -j MARK --or-mark $hash"
         fi
     done
 
     if [ -n "$IPSET" ]; then
-        echo "-I zapret_pre $(ipset_exclude src $1) -j RETURN"
-        echo "-I zapret_post $(ipset_exclude dst $1) -j RETURN"
+        echo "-I zapret_pre -m set --match-set nozapret.list src -j RETURN"
+        echo "-I zapret_post -m set --match-set nozapret.list dst -j RETURN"
     fi
 
     for i in $ISP_IF; do
@@ -373,7 +403,7 @@ iptables_start()
     local i
 
     for i in "" $([ -d /proc/sys/net/ipv6 ] && echo 6); do
-        ipset_create_exclude $i
+        ipset_create_exclude$i
         ip${i}tables-restore -n <<EOF
 *filter
 $(filter_fw_rules I $i)
@@ -484,6 +514,7 @@ start_service()
 stop_service()
 {
     firewall_stop
+    ipset_destroy
 
     killall -q nfqws && log "stopped"
     killall -q nfqws2 && log "stopped"

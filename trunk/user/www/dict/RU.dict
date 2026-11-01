@@ -1580,6 +1580,7 @@ Wireless_name=Имя беспроводной сети
 ZapretAutomaticList=добавлены автоматически
 ZapretCustomList=добавлены вручную
 ZapretExclusionList=исключения
+ZapretIPSetExclude=Список IPSet для исключения из обработки
 ZapretLog=Подробное логирование работы сервиса
 ZapretPostScript=Выполнить скрипт после изменения состояния сервиса
 ZapretDomainLists=Списки доменов

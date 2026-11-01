@@ -159,7 +159,7 @@ function change_tor_enabled(){
 		return;
 
 	const excludeNames = new Set([
-		"nozapret", "nozapret6",
+		"nozapret", "nozapret6", "nozapret.list",
 		"vpn.remote", "vpn.exclude", "vpn.clients", "vpn.remote.list", "vpn.exclude.list",
 		"tor.remote", "tor.exclude", "tor.clients"
 	]);

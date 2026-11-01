@@ -25,6 +25,7 @@
 <script>
 var $j = jQuery.noConflict();
 var ipmonitor = [<% get_static_client(); %>];
+let IPSetList = [<% get_ipset_list_hook(); %>];
 
 $j(document).ready(function() {
 	init_itoggle('zapret_enable', change_zapret_enabled);
@@ -43,6 +44,7 @@ function initial(){
 
 	if (found_app_zapret()) {
 		showhide_div('tbl_zapret', 1);
+		showhide_div('zapret_ipset', found_support_ipset());
 		change_zapret_enabled();
 	}
 }
@@ -90,7 +92,6 @@ function change_zapret_enabled(){
 
 	allowed_list = "<% nvram_get_x("", "zapret_iface"); %>";
 	items_list = [<% net_iface_list(); %>];
-
 	allowed = allowed_list.split(',')
 		.map(name => name.trim())
 		.filter(Boolean);
@@ -137,6 +138,7 @@ function change_zapret_enabled(){
 	allowed = allowed_list.replace(/\s+/g, '').split(',')
 		.filter(Boolean)
 		.map(item => item);
+
 	items = items_list.replace(/\s+/g, '').split(',')
 		.filter(Boolean)
 		.filter(ip => !allowed.includes(ip))
@@ -168,6 +170,73 @@ function change_zapret_enabled(){
 				.filter(item => !item.title)
 				.map(item => item.text)
 				.join(',');
+		}
+	}).css({
+		color: sel_style.color,
+		backgroundColor: sel_style.backgroundColor,
+		border: sel_style.border,
+		borderRadius: sel_style.borderRadius,
+		borderColor: sel_style.borderColor
+	});
+
+	if (!found_support_ipset())
+		return;
+
+	const excludeNames = new Set([
+		"nozapret", "nozapret6", "nozapret.list",
+		"vpn.remote", "vpn.exclude", "vpn.clients", "vpn.remote.list", "vpn.exclude.list",
+		"tor.remote", "tor.exclude", "tor.clients"
+	]);
+
+	allowed_list = "<% nvram_get_x("", "zapret_ipset_exclude"); %>";
+	allowed = allowed_list.replace(/\s+/g, '').split(',')
+		.filter(Boolean)
+		.map(item => ({text: item, checked: true }));
+
+	const map = new Map(
+		allowed.map(item => [item.text, {...item, title: ""}])
+	);
+
+	for (const item of IPSetList) {
+		if (excludeNames.has(item.name)) {
+			continue;
+		}
+
+		// russian word declension...
+		const title = item.entries
+			? `${item.entries} ${declOfNum(item.entries, ['<#Entries1#>', '<#Entries2#>', '<#Entries#>'])}`
+			: "";
+
+		if (map.has(item.name)) {
+			map.get(item.name).title = title;
+		} else {
+			map.set(item.name, {text: item.name, title, checked: false });
+		}
+	}
+
+	const result = [...map.values()].sort((a, b) => {
+		if (a.checked !== b.checked) {
+			return a.checked ? -1 : 1;
+		}
+
+		const aUpper = a.text[0] === a.text[0].toUpperCase();
+		const bUpper = b.text[0] === b.text[0].toUpperCase();
+
+		if (aUpper !== bUpper) {
+			return aUpper ? -1 : 1;
+		}
+
+		return a.text.localeCompare(b.text);
+	});
+
+	$j('#zapret_ipset_exclude').multiSelectDropdown({
+		items: result,
+		placeholder: "<#Select_menu_default#>",
+		width: '318px',
+		allowDelete: false,
+		allowAdd: false,
+		onChange: function(selected){
+			document.form.zapret_ipset_exclude.value = selected.join(',');
 		}
 	}).css({
 		color: sel_style.color,
@@ -310,6 +379,13 @@ function zapret_strategy_change(o, v) {
                                                 <span id="zapret_clients_list"></span>
                                                 <input type="hidden" name="zapret_clients" value="<% nvram_get_x("", "zapret_clients"); %>">
                                                 <input type="hidden" name="zapret_clients_allowed" value="<% nvram_get_x("", "zapret_clients_allowed"); %>">
+                                            </td>
+                                        </tr>
+                                        <tr id="zapret_ipset" style="display: none">
+                                            <th><#ZapretIPSetExclude#>:</th>
+                                            <td>
+                                                <span id="zapret_ipset_exclude"></span>
+                                                <input type="hidden" name="zapret_ipset_exclude" value="<% nvram_get_x("", "zapret_ipset_exclude"); %>">
                                             </td>
                                         </tr>
                                         <tr>

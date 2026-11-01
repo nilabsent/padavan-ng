@@ -1573,6 +1573,7 @@ Wireless_name=Wireless Name
 ZapretAutomaticList=added automatically
 ZapretCustomList=added manually
 ZapretExclusionList=exclusions
+ZapretIPSetExclude=IPSet List to Exclude from Processing
 ZapretLog=Detailed logging of service operation
 ZapretPostScript=Execute script after service state change
 ZapretDomainLists=Domain lists
